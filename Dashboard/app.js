@@ -425,7 +425,7 @@
             .map(
               (comp) => `
                 <div class="summary-line">
-                  <span>${comp.player}<br /><span class="replacement-note">${comp.reason}</span></span>
+                  <span><span class="comp-player-name">${comp.player}</span><br /><span class="replacement-note">${comp.reason}</span></span>
                   <strong>${formatDecimal(comp.similarity_score, 1)}<small>%</small></strong>
                 </div>
               `

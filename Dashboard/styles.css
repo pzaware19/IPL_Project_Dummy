@@ -557,6 +557,19 @@ th {
   color: var(--muted);
 }
 
+.comp-player-name {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: #f8f5ea;
+  background: linear-gradient(135deg, #14532d, #0f766e);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .replacement-note {
   display: inline-block;
   margin-top: 4px;
