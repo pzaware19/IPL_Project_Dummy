@@ -560,7 +560,7 @@ th {
 .comp-player-name {
   display: inline-block;
   margin-bottom: 4px;
-  color: #f8f5ea;
+  color: #ffffff;
   background: linear-gradient(135deg, #14532d, #0f766e);
   border: 1px solid rgba(255, 209, 102, 0.3);
   border-radius: 999px;
