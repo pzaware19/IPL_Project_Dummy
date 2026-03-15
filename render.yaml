@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ipl-auction-dashboard
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python Dashboard/build_dashboard_data.py
+    startCommand: python Dashboard/server.py
+    autoDeploy: true

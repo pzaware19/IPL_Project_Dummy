@@ -1,0 +1,440 @@
+{
+  "seasons": {
+    "2027": {
+      "auction_format": {
+        "squad_size": 25,
+        "overseas_limit": 8
+      },
+      "auction_file": "/path/to/ipl_auction_2027_full.xlsx",
+      "sold_file": "/path/to/IPL_Auction_2027_Sold_Player.csv",
+      "teams": {
+        "CSK": {
+          "name": "Chennai Super Kings",
+          "purse": 43.4,
+          "spent": 81.6,
+          "retained": 16,
+          "overseas_retained": 4,
+          "retained_players": [
+            "Anshul Kamboj",
+            "Gurjapneet Singh",
+            "Jamie Overton",
+            "MS Dhoni",
+            "Mukesh Choudhary",
+            "Nathan Ellis",
+            "Noor Ahmad",
+            "Ramakrishna Ghosh",
+            "Sanju Samson",
+            "Ruturaj Gaikwad",
+            "Shivam Dube",
+            "Shreyas Gopal",
+            "Syed Khaleel Ahmed",
+            "Ayush Mhatre",
+            "Dewald Brevis",
+            "Urvil Patel"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "top_order_bat": 0.75,
+            "middle_bat": 0.6,
+            "domestic_pace": 0.9,
+            "overseas_pace": 0.95,
+            "spin_all_rounder": 0.3,
+            "wicketkeeper": 0.05
+          },
+          "role_caps": {},
+          "focus_strategy": {
+            "singleton_roles": [
+              "wicketkeeper"
+            ],
+            "core_roles": [
+              "domestic_pace",
+              "overseas_pace"
+            ],
+            "non_core_hold_until_set": 8,
+            "late_stage_set": 30,
+            "late_stage_min_quality": 0.2,
+            "premium_reserve_roles": [
+              "domestic_pace",
+              "overseas_pace"
+            ],
+            "premium_reserve_discount": 0.75
+          }
+        },
+        "DC": {
+          "name": "Delhi Capitals",
+          "purse": 21.8,
+          "spent": 103.2,
+          "retained": 17,
+          "overseas_retained": 3,
+          "retained_players": [
+            "Abhishek Porel",
+            "Ajay Mandal",
+            "Ashutosh Sharma",
+            "Axar Patel",
+            "Dushmantha Chameera",
+            "Karun Nair",
+            "KL Rahul",
+            "Kuldeep Yadav",
+            "Madhav Tiwari",
+            "Mitchell Starc",
+            "Mukesh Kumar",
+            "Nitish Rana",
+            "Sameer Rizvi",
+            "T. Natarajan",
+            "Tripurana Vijay",
+            "Tristan Stubbs",
+            "Vipraj Nigam"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "top_order_bat": 0.45,
+            "middle_bat": 0.55,
+            "finisher": 0.3,
+            "wicketkeeper": 0.05,
+            "overseas_pace": 0.35,
+            "domestic_pace": 0.4,
+            "spin_bowler": 0.2
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "GT": {
+          "name": "Gujarat Titans",
+          "purse": 12.9,
+          "spent": 112.1,
+          "retained": 20,
+          "overseas_retained": 4,
+          "retained_players": [
+            "Anuj Rawat",
+            "Glenn Phillips",
+            "Gurnoor Singh Brar",
+            "Ishant Sharma",
+            "Jayant Yadav",
+            "Jos Buttler",
+            "Kagiso Rabada",
+            "Kumar Kushagra",
+            "Manav Suthar",
+            "Mohammad Siraj",
+            "Mohd. Arshad Khan",
+            "Nishant Sindhu",
+            "Prasidh Krishna",
+            "R. Sai Kishore",
+            "Rahul Tewatia",
+            "Rashid Khan",
+            "Sai Sudharsan",
+            "Shahrukh Khan",
+            "Shubman Gill",
+            "Washington Sundar"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "wicketkeeper": 0.25,
+            "middle_bat": 0.4,
+            "domestic_pace": 0.2,
+            "overseas_pace": 0.2,
+            "domestic_bat_depth": 0.2
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "KKR": {
+          "name": "Kolkata Knight Riders",
+          "purse": 64.3,
+          "spent": 60.7,
+          "retained": 12,
+          "overseas_retained": 2,
+          "retained_players": [
+            "Ajinkya Rahane",
+            "Angkrish Raghuvanshi",
+            "Anukul Roy",
+            "Harshit Rana",
+            "Manish Pandey",
+            "Ramandeep Singh",
+            "Rinku Singh",
+            "Rovman Powell",
+            "Sunil Narine",
+            "Umran Malik",
+            "Vaibhav Arora",
+            "Varun Chakaravarthy"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "wicketkeeper": 0.95,
+            "top_order_bat": 0.75,
+            "finisher": 0.65,
+            "overseas_pace": 0.95,
+            "domestic_pace": 0.7,
+            "spin_bowler": 0.45,
+            "seam_all_rounder": 0.55
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "LSG": {
+          "name": "Lucknow Super Giants",
+          "purse": 22.95,
+          "spent": 102.05,
+          "retained": 19,
+          "overseas_retained": 4,
+          "retained_players": [
+            "Abdul Samad",
+            "Aiden Markram",
+            "Akash Singh",
+            "Arjun Tendulkar",
+            "Arshin Kulkarni",
+            "Avesh Khan",
+            "Ayush Badoni",
+            "Digvesh Rathi",
+            "Himmat Singh",
+            "Manimaran Siddharth",
+            "Matthew Breetzke",
+            "Mayank Yadav",
+            "Md Shami",
+            "Mitchell Marsh",
+            "Mohsin Khan",
+            "Nicholas Pooran",
+            "Prince Yadav",
+            "Rishabh Pant",
+            "Shahbaz Ahmed"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "wicketkeeper": 0.0,
+            "overseas_pace": 0.45,
+            "domestic_pace": 0.65,
+            "spin_bowler": 0.55,
+            "top_order_bat": 0.2
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "MI": {
+          "name": "Mumbai Indians",
+          "purse": 2.75,
+          "spent": 122.25,
+          "retained": 20,
+          "overseas_retained": 7,
+          "retained_players": [
+            "Allah Ghazanfar",
+            "Ashwani Kumar",
+            "Corbin Bosch",
+            "Deepak Chahar",
+            "Hardik Pandya",
+            "Jasprit Bumrah",
+            "Mayank Markande",
+            "Mitchell Santner",
+            "Naman Dhir",
+            "Raghu Sharma",
+            "Raj Angad Bawa",
+            "Robin Minz",
+            "Rohit Sharma",
+            "Ryan Rickelton",
+            "Shardul Thakur",
+            "Sherfane Rutherford",
+            "Suryakumar Yadav",
+            "Tilak Verma",
+            "Trent Boult",
+            "Will Jacks"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "domestic_pace": 0.3,
+            "domestic_bat_depth": 0.25,
+            "wicketkeeper": 0.2
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "PBKS": {
+          "name": "Punjab Kings",
+          "purse": 11.5,
+          "spent": 113.5,
+          "retained": 21,
+          "overseas_retained": 6,
+          "retained_players": [
+            "Arshdeep Singh",
+            "Azmatullah Omarzai",
+            "Harnoor Pannu",
+            "Harpreet Brar",
+            "Lockie Ferguson",
+            "Marco Jansen",
+            "Marcus Stoinis",
+            "Mitch Owen",
+            "Musheer Khan",
+            "Nehal Wadhera",
+            "Prabhsimran Singh",
+            "Priyansh Arya",
+            "Pyla Avinash",
+            "Shashank Singh",
+            "Shreyas Iyer",
+            "Suryansh Shedge",
+            "Vishnu Vinod",
+            "Vyshak Vijaykumar",
+            "Xavier Bartlett",
+            "Yash Thakur",
+            "Yuzvendra Chahal"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "spin_bowler": 0.1,
+            "wicketkeeper": 0.35,
+            "domestic_bat_depth": 0.3,
+            "top_order_bat": 0.2
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "RCB": {
+          "name": "Royal Challengers Bengaluru",
+          "purse": 16.4,
+          "spent": 108.6,
+          "retained": 17,
+          "overseas_retained": 6,
+          "retained_players": [
+            "Abhinandan Singh",
+            "Bhuvneshwar Kumar",
+            "Devdutt Padikkal",
+            "Jacob Bethell",
+            "Jitesh Sharma",
+            "Josh Hazlewood",
+            "Krunal Pandya",
+            "Nuwan Thushara",
+            "Phil Salt",
+            "Rajat Patidar",
+            "Rasikh Dar",
+            "Romario Shepherd",
+            "Suyash Sharma",
+            "Swapnil Singh",
+            "Tim David",
+            "Virat Kohli",
+            "Yash Dayal"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "spin_bowler": 0.55,
+            "domestic_pace": 0.35,
+            "top_order_bat": 0.2,
+            "middle_bat": 0.25,
+            "wicketkeeper": 0.05
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        },
+        "RR": {
+          "name": "Rajasthan Royals",
+          "purse": 16.05,
+          "spent": 108.95,
+          "retained": 16,
+          "overseas_retained": 7,
+          "retained_players": [
+            "Dhruv Jurel",
+            "Donovan Ferreira",
+            "Jofra Archer",
+            "Kwena Maphaka",
+            "Lhuan-Dre Pretorious",
+            "Nandre Burger",
+            "Ravindra Jadeja",
+            "Riyan Parag",
+            "Sam Curran",
+            "Sandeep Sharma",
+            "Shimron Hetmyer",
+            "Shubham Dubey",
+            "Tushar Deshpande",
+            "Vaibhav Suryavanshi",
+            "Yashaswi Jaiswal",
+            "Yudhvir Charak"
+          ],
+          "max_buys": 4,
+          "min_buys": 2,
+          "role_needs": {
+            "indian_spin": 1.3,
+            "overseas_pace": 1.1,
+            "domestic_pace": 0.75,
+            "domestic_bat_depth": 0.45,
+            "domestic_all_rounder": 0.35,
+            "wicketkeeper": 0.1
+          },
+          "role_caps": {
+            "indian_spin": 6.5,
+            "overseas_pace": 3.25,
+            "domestic_pace": 0.9,
+            "domestic_bat_depth": 0.6,
+            "domestic_all_rounder": 0.6,
+            "wicketkeeper": 0.4
+          },
+          "focus_strategy": {
+            "singleton_roles": [
+              "indian_spin",
+              "overseas_pace",
+              "domestic_bat_depth"
+            ],
+            "core_roles": [
+              "indian_spin",
+              "overseas_pace"
+            ],
+            "non_core_hold_until_set": 14,
+            "late_stage_set": 30,
+            "late_stage_min_quality": 0.24,
+            "premium_reserve_roles": [
+              "indian_spin",
+              "overseas_pace"
+            ],
+            "premium_reserve_discount": 0.65,
+            "priority_target_bonus": 1.18,
+            "priority_target_reserve_floor": 1.5,
+            "overseas_early_set_cutoff": 12,
+            "overseas_very_early_set_cutoff": 4,
+            "overseas_early_discount": 0.42,
+            "overseas_very_early_discount": 0.72,
+            "overseas_right_arm_fast_bonus": 1.12,
+            "overseas_left_arm_discount": 0.84,
+            "domestic_bat_requires_spin": true
+          }
+        },
+        "SRH": {
+          "name": "Sunrisers Hyderabad",
+          "purse": 25.5,
+          "spent": 99.5,
+          "retained": 15,
+          "overseas_retained": 6,
+          "retained_players": [
+            "Abhishek Sharma",
+            "Aniket Verma",
+            "Brydon Carse",
+            "Eshan Malinga",
+            "Harsh Dubey",
+            "Harshal Patel",
+            "Heinrich Klaasen",
+            "Ishan Kishan",
+            "Jaydev Unadkat",
+            "Kamindu Mendis",
+            "Nitish Kumar Reddy",
+            "Pat Cummins",
+            "Smaran Ravichandaran",
+            "Travis Head",
+            "Zeeshan Ansari"
+          ],
+          "max_buys": null,
+          "min_buys": null,
+          "role_needs": {
+            "spin_bowler": 0.4,
+            "domestic_pace": 0.6,
+            "middle_bat": 0.25,
+            "wicketkeeper": 0.05,
+            "overseas_pace": 0.35
+          },
+          "role_caps": {},
+          "focus_strategy": {}
+        }
+      }
+    }
+  }
+}

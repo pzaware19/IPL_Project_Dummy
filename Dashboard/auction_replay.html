@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IPL Auction Path Replay</title>
+    <link rel="stylesheet" href="./styles.css?v=ipl-theme-2" />
+  </head>
+  <body>
+    <main class="replay-shell">
+      <section class="replay-header">
+        <div>
+          <p class="eyebrow">Auction Replay</p>
+          <h1>Shared League Auction Path</h1>
+          <p>
+            Replay the representative 2026 auction sequence from the shared league simulation.
+            Move nomination by nomination, watch purse balances evolve, and inspect how set order
+            changes the market for every team.
+          </p>
+          <div class="hero-actions">
+            <a class="action-button" href="./index.html" rel="noopener noreferrer">Back To Main Dashboard</a>
+          </div>
+        </div>
+        <div class="replay-badge">
+          <span>Replay Mode</span>
+          <strong>Sequential English Auction</strong>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Controls</p>
+            <h3>Step Through The Auction</h3>
+          </div>
+          <div class="control-row">
+            <label>
+              Focus Team
+              <select id="replay-team-filter"></select>
+            </label>
+            <label>
+              Set Filter
+              <select id="replay-set-filter"></select>
+            </label>
+          </div>
+        </div>
+
+        <div class="replay-slider-wrap">
+          <div class="replay-slider-meta">
+            <span id="replay-step-label"></span>
+            <span id="replay-set-label"></span>
+          </div>
+          <input id="replay-step-slider" class="replay-slider" type="range" min="1" max="1" value="1" />
+        </div>
+
+        <div class="replay-card-grid">
+          <div class="replay-card">
+            <h4>Current Player</h4>
+            <strong id="replay-player">--</strong>
+            <p id="replay-role" class="mini-note"></p>
+          </div>
+          <div class="replay-card">
+            <h4>Winning Team</h4>
+            <strong id="replay-winner">--</strong>
+            <p id="replay-runner-up" class="mini-note"></p>
+          </div>
+          <div class="replay-card">
+            <h4>Hammer Price</h4>
+            <strong id="replay-price">--</strong>
+            <p id="replay-reserve" class="mini-note"></p>
+          </div>
+          <div class="replay-card">
+            <h4>Focus Team View</h4>
+            <strong id="replay-focus-status">--</strong>
+            <p id="replay-focus-summary" class="mini-note"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-grid">
+        <div class="replay-panel replay-stage">
+          <div class="replay-highlight">
+            <p class="eyebrow">Current Event</p>
+            <h3 id="replay-highlight-title">--</h3>
+            <p id="replay-highlight-copy" class="mini-note"></p>
+          </div>
+          <div class="replay-meta-grid" id="replay-meta-grid"></div>
+        </div>
+
+        <div class="replay-panel">
+          <div class="tile-header">
+            <h4>Recent Timeline</h4>
+            <span class="pill accent">Representative Path</span>
+          </div>
+          <div id="replay-timeline" class="replay-timeline"></div>
+        </div>
+      </section>
+
+      <section class="replay-grid lower">
+        <div class="replay-panel">
+          <div class="tile-header">
+            <h4>Purse Tracker</h4>
+            <span class="pill">After current step</span>
+          </div>
+          <div id="replay-purse-grid" class="purse-grid"></div>
+        </div>
+
+        <div class="replay-panel">
+          <div class="tile-header">
+            <h4>Focus Team Acquisitions So Far</h4>
+            <span class="pill" id="replay-focus-team-pill">Team</span>
+          </div>
+          <div class="table-wrap">
+            <table id="replay-focus-table"></table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./data/dashboard_data.js?v=ipl-theme-2"></script>
+    <script src="./replay.js?v=ipl-theme-2"></script>
+  </body>
+</html>

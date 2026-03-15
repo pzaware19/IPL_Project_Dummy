@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IPL Scenario Builder</title>
+    <link rel="stylesheet" href="./styles.css?v=ipl-theme-2" />
+  </head>
+  <body>
+    <main class="replay-shell">
+      <section class="replay-header">
+        <div>
+          <p class="eyebrow">Scenario Builder</p>
+          <h1>Interactive Auction Strategy Builder</h1>
+          <p>
+            Edit purse, retained structure, overseas flexibility, and role priorities for any IPL
+            team, then run a lightweight shared-auction counterfactual with explainability.
+          </p>
+          <div class="hero-actions">
+            <a class="action-button" href="./index.html" rel="noopener noreferrer">Back To Main Dashboard</a>
+          </div>
+        </div>
+        <div class="replay-badge">
+          <span>Decision Support</span>
+          <strong>Editable Team Context</strong>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Inputs</p>
+            <h3>Build Your Auction Scenario</h3>
+          </div>
+          <div class="pill-row wrap">
+            <span class="pill" id="scenario-method-pill"></span>
+            <button class="action-button" id="scenario-run-button" type="button">Run Shared Scenario</button>
+          </div>
+        </div>
+
+        <div class="tool-grid wide-left">
+          <div class="tool-controls">
+            <label>
+              Team
+              <select id="scenario-team"></select>
+            </label>
+            <label>
+              Purse Remaining (Cr)
+              <input id="scenario-purse" type="number" min="0" step="0.05" />
+            </label>
+            <label>
+              Retained Players
+              <input id="scenario-retained" type="number" min="0" max="25" step="1" />
+            </label>
+            <label>
+              Overseas Retained
+              <input id="scenario-overseas" type="number" min="0" max="8" step="1" />
+            </label>
+            <label>
+              Retained Core Notes
+              <textarea id="scenario-retained-list"></textarea>
+            </label>
+            <label>
+              Bid Ladder Debug Player
+              <input id="scenario-debug-player" list="scenario-debug-options" placeholder="Optional player to audit" />
+              <datalist id="scenario-debug-options"></datalist>
+            </label>
+            <div class="pill-row wrap">
+              <button class="action-button" id="scenario-reset-team" type="button">Reset Team</button>
+              <button class="action-button" id="scenario-reset-all" type="button">Reset All Teams</button>
+            </div>
+          </div>
+
+          <div class="slider-stack">
+            <h4>Role Priority Weights</h4>
+            <div id="scenario-role-sliders" class="slider-stack"></div>
+          </div>
+        </div>
+        <p class="mini-note" id="scenario-status"></p>
+        <div id="scenario-edited-teams" class="pill-row wrap"></div>
+      </section>
+
+      <section class="tool-grid wide-left">
+        <div class="replay-panel">
+          <div class="tile-header">
+            <h4>General-Equilibrium Buy Board</h4>
+            <span class="pill accent" id="scenario-summary-pill"></span>
+          </div>
+          <div class="table-wrap">
+            <table id="scenario-results"></table>
+          </div>
+        </div>
+
+        <div class="replay-panel">
+          <div class="tile-header">
+            <h4>Scenario Summary</h4>
+            <span class="pill" id="scenario-team-pill"></span>
+          </div>
+          <div id="scenario-summary" class="insight-stack"></div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tile-header">
+          <h4>Explainability Cards</h4>
+          <span class="pill accent">Why the model likes these targets</span>
+        </div>
+        <div id="scenario-explainability" class="compare-grid"></div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tile-header">
+          <h4>Bid Ladder Debug</h4>
+          <span class="pill" id="scenario-debug-pill">Optional audit trace</span>
+        </div>
+        <div id="scenario-debug" class="insight-stack"></div>
+      </section>
+    </main>
+
+    <script src="./data/dashboard_data.js?v=ipl-theme-2"></script>
+    <script src="./scenario.js?v=ipl-theme-2"></script>
+  </body>
+</html>

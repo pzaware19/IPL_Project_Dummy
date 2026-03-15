@@ -1,0 +1,67 @@
+{
+  "seasons": {
+    "2027": {
+      "auction_format": {
+        "squad_size": 25,
+        "overseas_limit": 8
+      },
+      "teams": {
+        "RR": {
+          "purse": 18.5,
+          "spent": 101.5,
+          "retained": 15,
+          "overseas_retained": 6,
+          "retained_players": [
+            "Dhruv Jurel",
+            "Jofra Archer",
+            "Riyan Parag",
+            "Sandeep Sharma",
+            "Yashaswi Jaiswal"
+          ],
+          "max_buys": 6,
+          "min_buys": 3,
+          "role_caps": {
+            "indian_spin": 7.0,
+            "overseas_pace": 4.0,
+            "domestic_pace": 1.2,
+            "domestic_bat_depth": 0.8
+          },
+          "role_needs": {
+            "indian_spin": 1.2,
+            "overseas_pace": 1.0,
+            "domestic_pace": 0.8,
+            "domestic_bat_depth": 0.5
+          }
+        }
+      }
+    },
+    "2028": {
+      "auction_format": {
+        "squad_size": 25,
+        "overseas_limit": 8
+      },
+      "teams": {
+        "CSK": {
+          "purse": 28.0,
+          "spent": 92.0,
+          "retained": 14,
+          "overseas_retained": 4,
+          "retained_players": [
+            "Ruturaj Gaikwad",
+            "Shivam Dube",
+            "Noor Ahmad",
+            "Sanju Samson"
+          ],
+          "max_buys": 8,
+          "min_buys": 4,
+          "role_needs": {
+            "top_order_bat": 0.7,
+            "domestic_pace": 0.9,
+            "overseas_pace": 0.8,
+            "spin_all_rounder": 0.4
+          }
+        }
+      }
+    }
+  }
+}

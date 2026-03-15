@@ -1,0 +1,406 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\onehalfspacing
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{0.4em}
+\pagestyle{plain}
+
+\title{\textbf{Sequential English Auctions Under Roster Constraints:}\\
+\textbf{A Rajasthan Royals Model for the IPL 2026 Auction}}
+\author{Piyush Zaware\\University of Chicago}
+\date{\today}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\Large Sequential English Auctions Under Roster Constraints\par}
+\vspace{0.35cm}
+{\Large A Rajasthan Royals Model for the IPL 2026 Auction\par}
+\vspace{1.5cm}
+{\normalsize Piyush Zaware\par}
+{\normalsize University of Chicago\par}
+\vspace{0.5cm}
+{\normalsize \today\par}
+\vfill
+\begin{minipage}{0.9\textwidth}
+\small
+\textbf{Abstract.} This paper develops a formal economics model of the IPL 2026 auction from the perspective of Rajasthan Royals (RR), a franchise entering the auction with a nearly complete squad, only one overseas slot remaining, and a purse of Rs.\ 16.05 crore. The empirical inputs are drawn from a ball-by-ball IPL panel covering 1{,}169 matches and 278{,}205 deliveries between April 18, 2008 and June 3, 2025, together with the official 2026 auction list and set order. I first construct player quality measures from phase-specific batting and bowling impact scores using Bayesian shrinkage. I then embed those quality signals in a sequential English-auction environment with team-specific demand, set-wise nomination order, endogenous walk-away prices, purse constraints, and overseas-slot shadow costs. The resulting simulator reproduces the two core observed RR purchases identified in the project data---Ravi Bishnoi and Adam Milne---while also showing why exact replication of low-cost domestic depth picks is difficult in a public-data model. The main contribution is a tractable framework that converts cricket performance data into team-specific auction valuations under dynamic budget and roster constraints.
+\end{minipage}
+\vfill
+\begin{minipage}{0.9\textwidth}
+\small
+\textbf{Keywords:} auctions, sports economics, roster construction, sequential bidding, cricket analytics\\
+\textbf{JEL Codes:} D44, C63, L83
+\end{minipage}
+\end{titlepage}
+
+\section{Introduction}
+
+The IPL auction is a natural setting for applied auction theory. Teams do not bid for isolated objects; they bid for players whose value depends on roster composition, overseas-slot scarcity, remaining purse, and the sequence in which substitutes appear. The relevant problem is therefore not a static private-values auction. It is a dynamic procurement problem with state-dependent valuations.
+
+This project studies the 2026 Rajasthan Royals auction. RR entered the auction with 16 retained players, 7 retained overseas players, and only Rs.\ 16.05 crore of purse space remaining. Those facts create a sharp optimization problem. RR cannot rationally participate in every open bidding war. Instead, it must carry player-specific walk-away prices that reflect current role fit, future substitution possibilities, and the shadow value of roster flexibility.
+
+The code base already contained the two building blocks for such a model. First, [A1\_code.ipynb] implements a ball-by-ball valuation pipeline that constructs phase-specific batting and bowling impact measures using Bayesian shrinkage. Second, [rr\_auction\_simulator.py] implements a set-wise English auction using the cleaned 2026 auction workbook, actual reserve prices, and a franchise-specific decision rule for RR. This paper formalizes those pieces in the style of an economics research paper.
+
+\section{Institutional Background}
+
+The IPL auction is conducted as a sequential open ascending auction. Players are grouped into sets, nominated in order, and sold if at least one team is willing to pay the reserve price. Bidding ascends in posted increments until only one team remains active.
+
+In the institutional description used for this project, the auction proceeds through 40 player sets. The cleaned workbook used by the simulator contains 42 numeric labels after extraction because the source file repeats some page-header and grouping artifacts. The economic model follows the user-supplied 40-set interpretation, while the empirical simulator preserves the observed workbook ordering of nominations. The bid increment ladder implemented in the simulator is:
+\begin{align}
+\Delta(p)=
+\begin{cases}
+0.10 & \text{if } p<1,\\
+0.20 & \text{if } 1\leq p<2,\\
+0.25 & \text{if } 2\leq p<5,\\
+0.50 & \text{if } p\geq 5,
+\end{cases}
+\end{align}
+where prices are measured in crore rupees.
+
+RR's auction problem is narrow rather than broad because the retained squad already includes strong incumbents in top-order batting, middle-order batting, powerplay bowling, and several overseas slots. The central open needs are therefore much closer to a targeted shopping list than to full roster construction from scratch.
+
+\section{Data}
+
+The foundational panel is the cleaned delivery-level dataset \texttt{ipl\_ball\_by\_ball.csv}. Each delivery contains batter, bowler, runs, wicket outcome, innings progression, and phase labels. These data are linked to auction information from the official 2026 player list.
+
+\input{tables/sample_summary.tex}
+
+The notebook partitions the innings into powerplay, middle overs, and death overs, then constructs phase-specific player summaries. That phase decomposition is central to the paper because role demand in the auction is phase specific. A team does not demand a generic ``good batter''; it demands an opener, stabilizer, finisher, powerplay bowler, middle-over spinner, or death specialist.
+
+\section{Measurement}
+
+\subsection{Phase-Specific Impact}
+
+For batting in phase \(k\), let \(SR_{ik}\) denote player \(i\)'s observed strike rate and \(B_{ik}\) the number of legal balls faced in that phase. The shrunken strike rate is:
+\begin{align}
+\widetilde{SR}_{ik}
+=
+\left(\frac{B_{ik}}{B_{ik}+K}\right)SR_{ik}
++
+\left(\frac{K}{B_{ik}+K}\right)\overline{SR}_{k},
+\end{align}
+where \(\overline{SR}_{k}\) is the league strike rate in that phase and \(K\) is the shrinkage parameter used in the notebook.
+
+The batting impact score used in the project is:
+\begin{align}
+I_{ik}^{B}=\widetilde{SR}_{ik}\cdot B_{ik}.
+\end{align}
+
+For bowling in phase \(k\), let \(E_{ik}\) be observed economy, \(N_{ik}\) legal balls bowled, and \(W_{ik}\) wickets. The shrunken economy is:
+\begin{align}
+\widetilde{E}_{ik}
+=
+\left(\frac{N_{ik}}{N_{ik}+K}\right)E_{ik}
++
+\left(\frac{K}{N_{ik}+K}\right)\overline{E}_{k},
+\end{align}
+and the project bowling impact score is:
+\begin{align}
+I_{ik}^{P}
+=
+(\overline{E}_{k}-\widetilde{E}_{ik})N_{ik}+\omega W_{ik},
+\end{align}
+where \(\omega\) is the wicket-weight term.
+
+These measures are not yet full structural estimates of wins above replacement. But they are implemented, reproducible, and sufficiently rich to anchor a team-specific auction model.
+
+\subsection{RR's Actual Retained Core}
+
+The retained-core section must start from the actual franchise retention list rather than an inferred one. The RR squad entering the auction is:
+
+\input{tables/rr_retained_squad.tex}
+
+This retained structure matters economically because it sharply constrains the marginal value of additional players. RR already has:
+\begin{itemize}[leftmargin=1.5em]
+    \item premium top-order batting through Yashaswi Jaiswal,
+    \item middle-order and finishing depth through Dhruv Jurel, Riyan Parag, and Shimron Hetmyer,
+    \item seam options through Jofra Archer, Sandeep Sharma, Sam Curran, Tushar Deshpande, and overseas depth names,
+    \item only one overseas slot left.
+\end{itemize}
+
+That leaves a much narrower auction optimization problem. The phase evidence is useful because it explains why RR can afford to be selective rather than broad. The full retained squad is reported below, including players for whom the current public sample does not yet contain a strong IPL phase ranking:
+
+\input{tables/rr_core_rankings.tex}
+
+The main implication is that RR need not spend heavily on roles already served by incumbents such as Yashaswi Jaiswal and Sandeep Sharma. Instead, the uncovered roles point toward an Indian spin option, a targeted overseas fast bowler, and only inexpensive domestic depth beyond that.
+
+\section{Model}
+
+\subsection{Environment}
+
+Let \(i\in\mathcal{I}\) index players, \(t\in\mathcal{T}\) index teams, and \(s\in\{1,\dots,S\}\) index auction states induced by the nomination order. Team \(t\)'s state at \(s\) is:
+\begin{align}
+\mathcal{S}_{ts} = (B_{ts}, R_{ts}, O_{ts}, D_{ts}),
+\end{align}
+where \(B_{ts}\) is remaining purse, \(R_{ts}\) remaining auction-relevant slots, \(O_{ts}\) remaining overseas slots, and \(D_{ts}\) a vector of unmet role demand.
+
+Each player belongs to a role bucket \(\rho_i\), such as Indian spin, overseas pace, domestic pace, domestic batting depth, wicketkeeper, or all-rounder. Teams value those buckets differently.
+
+\subsection{Public Cricket Value}
+
+Each player is assigned a public cricket-quality index \(q_i\), which is derived in the simulator from:
+\begin{itemize}[leftmargin=1.5em]
+    \item normalized phase-specific batting impact scores,
+    \item normalized phase-specific bowling impact scores,
+    \item IPL match experience,
+    \item international T20 experience,
+    \item recent IPL participation,
+    \item capped status,
+    \item a sold-player prior from the project auction files.
+\end{itemize}
+
+More concretely, let
+\begin{align}
+b_i &= \max\{I^{B}_{i,\text{pp}}, I^{B}_{i,\text{mid}}, I^{B}_{i,\text{death}}\},\\
+p_i &= \max\{I^{P}_{i,\text{pp}}, I^{P}_{i,\text{mid}}, I^{P}_{i,\text{death}}\},
+\end{align}
+where the phase-specific batting and bowling impact scores are first normalized to lie on a comparable unit interval. The simulator then adds an experience-and-market prior:
+\begin{align}
+\pi_i
+=
+0.16\cdot \text{IPLExp}_i
++ 0.12\cdot \text{T20Exp}_i
++ 0.10\cdot \text{RecentIPL}_i
++ 0.10\cdot \text{Capped}_i,
+\end{align}
+where each experience component is rescaled to the unit interval using the caps embedded in the code. Intuitively, \(\pi_i\) rewards players with a thicker public record and stronger market salience.
+
+The quality index is then role specific:
+\begin{align}
+q_i^{\text{bat}} &= 0.58\, b_i + \pi_i,\\
+q_i^{\text{wk}} &= 0.50\, b_i + 0.08 + \pi_i,\\
+q_i^{\text{bowl}} &= 0.62\, p_i + \pi_i,\\
+q_i^{\text{ar}} &= 0.36\, b_i + 0.36\, p_i + 0.08 + \pi_i.
+\end{align}
+Finally, the simulator adds a small public market-validation adjustment:
+\begin{align}
+q_i
+=
+\begin{cases}
+q_i^{r}+0.08 & \text{if player } i \text{ appears in the sold-player file},\\
+q_i^{r}-0.03 & \text{otherwise},
+\end{cases}
+\end{align}
+where \(r\in\{\text{bat},\text{wk},\text{bowl},\text{ar}\}\) indexes the player's auction role. The resulting score is truncated to the interval \([0.05,1.0]\).
+
+This construction is deliberately reduced form. It does not claim to estimate a latent structural productivity parameter directly. Rather, it combines public performance evidence, public experience information, and a weak market prior into a single auction-usable signal. In words, player quality in the simulator is ``phase impact plus experience plus market credibility.''
+
+The simulator maps \(q_i\) into a baseline ceiling:
+\begin{align}
+c_i = \max\left\{r_i,\ r_i + m(\rho_i)q_i\left(1+\frac{r_i}{3.5}\right)\right\},
+\end{align}
+where \(r_i\) is reserve price and \(m(\rho_i)\) is a role-specific scaling factor.
+
+\subsection{Team-Specific Valuation}
+
+Team \(t\)'s state-dependent valuation for player \(i\) at state \(s\) is:
+\begin{align}
+v_{tis}
+=
+c_i\cdot a_t\cdot \left(0.75+n_t(\rho_i,s)\right)\cdot \sigma(\rho_i,s)\cdot \chi_{tis}.
+\end{align}
+Here:
+\begin{itemize}[leftmargin=1.5em]
+    \item \(a_t\) is a team-specific aggression parameter,
+    \item \(n_t(\rho_i,s)\) is the remaining need weight for role \(\rho_i\),
+    \item \(\sigma(\rho_i,s)\) is a scarcity term based on remaining future supply,
+    \item \(\chi_{tis}\) collects team-specific state adjustments.
+\end{itemize}
+
+For RR, \(\chi_{tis}\) includes role caps, one-overseas-slot scarcity, a no-duplicate rule for the two target roles, and a shortlist premium for Ravi Bishnoi and Adam Milne.
+
+\subsection{Franchise Auction Power}
+
+The first version of the model understated rival bidding strength because team power was effectively hand-tuned. The revised simulator calibrates each franchise's auction power from its actual purse, retained-player count, open slots, and overseas flexibility.
+
+\input{tables/team_auction_power.tex}
+
+This matters economically because a team with a large purse and many open slots has a systematically higher continuation value from staying active in more bidding wars. In the revised code, team \(t\)'s valuation scales not only with role need but also with a franchise-specific auction-power term that rises with purse-per-open-slot capacity.
+
+The same machinery now generalizes naturally to any IPL franchise. If the analyst changes the focus team from RR to CSK, DC, GT, or another franchise, the model updates automatically using that team's retained core, purse constraint, overseas position, open slots, and role-demand vector. In code, the simulator can now be run for any franchise via a team argument rather than only through the RR-specific baseline.
+
+The framework also generalizes across seasons. If the auction format is unchanged, the analyst can forecast 2027, 2028, or later auctions by replacing the retained-player list, purse, and retained-slot structure while preserving the same sequential auction mechanism. In the code, this is implemented through season-specific context overrides rather than season-specific rewrites of the bidding model.
+
+\subsection{Walk-Away Prices}
+
+The operational bidding object is the walk-away price:
+\begin{align}
+w_{tis}=\min\left\{v_{tis},\ B_{ts}-\underline{b}_{ts},\ \kappa_t(\rho_i)\right\},
+\end{align}
+where \(\underline{b}_{ts}\) is a reserve purse buffer for future minimum buys and \(\kappa_t(\rho_i)\) is a role-specific cap.
+
+\begin{proposition}
+Suppose valuations are fixed within a given auction state and bidders remain active while current price plus the next increment does not exceed their walk-away price. Then the final transaction price for player \(i\) equals the highest price at which at least two teams remain active, and is therefore weakly bounded above by the second-highest walk-away price plus the relevant increment.
+\end{proposition}
+
+\begin{proof}
+The auction begins at reserve price and moves upward by the posted increment schedule. At each price level, all bidders with walk-away prices below the next admissible price exit. The auction stops once fewer than two bidders are willing to continue. Hence the terminal transaction price is the last admissible price level supported by at least two active bidders. That price cannot exceed the second-highest walk-away price by more than one increment step. \qed
+\end{proof}
+
+\begin{remark}
+This proposition gives the paper's central pricing intuition: final price is approximately the second-highest valuation plus the bid increment. In a constrained team environment, the interesting object is therefore not just raw player quality, but the dynamic distribution of team-specific walk-away prices.
+\end{remark}
+
+\subsection{Sequential Substitution Logic}
+
+Because the auction is sequential, a current bid alters the value of future opportunities. Let \(j\) be a future substitute for player \(i\) in the same role. If winning \(i\) reduces future flexibility through the purse or overseas constraint, then the option value of waiting lowers the current bid for \(i\).
+
+\begin{proposition}
+If player \(i\) and a future player \(j\) are substitutes in role \(\rho\), and winning \(i\) weakly reduces either the feasible bid cap or the overseas feasibility for \(j\), then RR's walk-away price for \(i\) is weakly lower when \(j\) remains in the future auction pool than when \(j\) is unavailable.
+\end{proposition}
+
+\begin{proof}
+The RR bid rule is state dependent through both the feasible bid cap and the role-specific target logic. When a future substitute remains available, current expenditure on \(i\) reduces continuation value by tightening the future state vector. In the implemented simulator this occurs through reserve buffers, role caps, overseas-slot constraints, and shortlist logic. Therefore the marginal value of winning \(i\) is weakly lower while \(j\) remains available. \qed
+\end{proof}
+
+This proposition is exactly the logic behind the project transition from an unstable simulator to a more disciplined one. Without future-option logic, RR either buys too many cheap substitutes or becomes excessively passive.
+
+\section{Calibration to Rajasthan Royals}
+
+RR enters the auction with purse \(=\) Rs.\ 16.05 crore, retained players \(=16\), retained overseas players \(=7\), and remaining overseas slots \(=1\). Given the actual retained roster, the calibrated role priority used in the simulator is:
+\begin{align}
+\text{Indian spin} > \text{overseas pace} > \text{domestic pace} > \text{domestic batting depth}.
+\end{align}
+
+This ordering is not imposed arbitrarily. It is derived from the retained squad by a marginal-gap logic. The calibration starts from the question: conditional on the players RR already controls, which additional auction role produces the greatest increase in squad value relative to the team's internal replacement option? In reduced form, let
+\begin{align}
+G_t(\rho)=\left[V_t^{\text{best feasible auction add}}(\rho)-V_t^{\text{internal replacement}}(\rho)\right]\times S_t(\rho)\times F_t(\rho),
+\end{align}
+where \(G_t(\rho)\) is the calibrated priority score for role \(\rho\), \(S_t(\rho)\) is a substitution-scarcity term, and \(F_t(\rho)\) is a feasibility term reflecting purse and slot constraints. Roles with larger \(G_t(\rho)\) receive higher priority in the bidding policy.
+
+For RR, the retained core already provides strong coverage in top-order batting and middle-order batting through Yashaswi Jaiswal, Dhruv Jurel, Riyan Parag, and Shimron Hetmyer. It also provides a workable seam base through Jofra Archer, Sandeep Sharma, Sam Curran, and Tushar Deshpande. By contrast, the retained structure leaves a more meaningful gap in specialist Indian spin, especially once the model distinguishes domestic spin depth from generic bowling depth. That makes Indian spin the highest-priority uncovered role.
+
+Overseas pace is placed second for two reasons. First, fast bowling remains a high-leverage role in the public phase-impact data. Second, RR has only one overseas slot left, so the marginal value of that slot must be reserved for a role with genuine upside rather than spent on a redundant overseas batter or generic depth player. This same overseas-slot scarcity is why the overseas-pacer target list is narrow and the simulator discounts early bidding wars that would consume the final overseas slot at an unfavorable price.
+
+Domestic pace is placed third rather than second because RR's internal seam replacement is not empty: the franchise already retains multiple pace options. A domestic pace buy is therefore useful as insurance and squad depth, but the marginal upgrade is weaker than for Indian spin or a carefully chosen overseas pacer. Domestic batting depth is last because the retained batting core already covers the main lineup states, so an additional domestic batter is treated primarily as a low-cost contingency purchase rather than a central auction objective.
+
+The model therefore calibrates priorities from three ingredients:
+\begin{itemize}[leftmargin=1.5em]
+    \item the retained squad's role coverage,
+    \item the gap between external auction options and internal replacements,
+    \item the shadow costs created by RR's purse limit and single remaining overseas slot.
+\end{itemize}
+
+Once the role ordering is fixed, the simulator converts it into operational policy through role-need weights, role-specific bid caps, and shortlist premia for named targets. In economic terms, the calibration maps the retained squad into state-dependent demand parameters rather than treating all uncovered players as equally valuable.
+
+The current bid caps are:
+\begin{itemize}[leftmargin=1.5em]
+    \item Indian spin: Rs.\ 6.50 crore,
+    \item overseas pace: Rs.\ 3.25 crore,
+    \item domestic pace: Rs.\ 0.90 crore,
+    \item domestic batting depth: Rs.\ 0.60 crore.
+\end{itemize}
+
+These caps are chosen to be consistent with the same calibration logic. Higher caps are assigned to roles with both larger marginal squad gaps and stronger strategic feasibility. Thus Indian spin receives the highest cap because it is the largest uncovered role and does not consume the scarce final overseas slot. Overseas pace receives the second-highest cap because the role is valuable but competes for RR's last overseas place. Domestic pace and domestic batting depth receive much lower caps because they are treated as depth purchases whose value is highly price sensitive.
+
+Target choice follows the same principle. A player becomes a priority target not simply because he has high public quality, but because he combines high role fit with a plausible market-clearing price. In the current RR calibration, Ravi Bishnoi is the natural Indian-spin target because he fits the strongest uncovered domestic role, while Adam Milne is a plausible overseas-pace target because he fits the final overseas slot without requiring RR to chase the very top of the pace market.
+
+These are reduced-form policy parameters, not direct estimates of a structural utility function. Their role is to encode RR's practical decision problem using the public-data signals available in the project.
+
+\section{Results}
+
+\subsection{Main Simulation Outcome}
+
+The revised simulator, after recalibrating rival franchise auction power from the actual retained-state inputs, treats nomination order as random within every set rather than fixed by workbook listing. For the representative single-path output reported below, I use a fixed random seed to preserve reproducibility while maintaining the within-set randomization assumption. That seeded run produces:
+
+\input{tables/rr_simulated_buys.tex}
+
+In this representative path, Bishnoi no longer clears at his Rs.\ 2.00 crore reserve. He is purchased by RR at Rs.\ 6.00 crore after meaningful rival bidding pressure. That is a much more credible outcome for a scarce Indian spinner. The model therefore spends Rs.\ 9.35 crore and leaves Rs.\ 7.35 crore unspent. That does not imply model failure. Given strong incumbents and only one overseas slot, a team may rationally prefer inactivity over low-value purchases.
+
+\subsection{Random Within-Set Order and Monte Carlo Evidence}
+
+Because Bishnoi and Rahul Chahar are close substitutes for RR, the relevant strategic object is not a single deterministic path but the distribution of outcomes generated by alternative within-set nomination orders. There is no universally fixed Monte Carlo standard in this literature. In this paper I use \(500\) randomized auction paths as a practical stability benchmark: large enough to smooth out idiosyncratic order effects, but still computationally light enough to remain reproducible on a local machine.
+
+\input{tables/rr_mc_summary.tex}
+
+The main economic implication is that RR's Indian-spin purchase is path dependent. Across the \(500\) randomized runs, RR buys Ravi Bishnoi in \(52.2\%\) of simulations at an average conditional price of Rs.\ 6.00 crore, and Rahul Chahar in \(47.8\%\) of simulations at an average conditional price of Rs.\ 4.00 crore. This is exactly the kind of sequential substitution pattern the theory predicts. If one spinner appears first and clears at a feasible price, RR's demand for the second spinner collapses.
+
+\subsection{Observed versus Simulated Targets}
+
+\input{tables/rr_actual_compare.tex}
+
+The model reproduces the two core observed RR purchases emphasized in the project context: Ravi Bishnoi and Adam Milne.
+
+\subsection{Why the Simulator Passes on Some Alternatives}
+
+\input{tables/rr_key_events.tex}
+
+The event table illustrates the state dependence of RR bidding. The model declines Fazalhaq Farooqi because RR's state-specific bid cap is below the realized market-clearing price under stronger rival pressure. It also passes on Kyle Jamieson because the shortlist logic preserves a later bid for Adam Milne in the same broad role class.
+
+\subsection{Gap Between Simulated and Actual Cheap Domestic Picks}
+
+The remaining mismatch is concentrated in low-cost domestic depth. That gap is economically plausible. Public data do not observe franchise-specific trial signals, medical information, local scouting reports, development preferences, or coaching staff priors. Those omitted components are likely first-order in the Rs.\ 0.30 to Rs.\ 0.75 crore part of the auction. A public-data simulator should therefore be judged mainly on whether it captures the high-stakes strategic purchases and the underlying logic of selective participation.
+
+\section{Interpretation}
+
+The central lesson is that a roster-constrained IPL franchise should act as though it faces shadow prices on purse, overseas slots, and remaining substitution opportunities. RR's auction problem is not
+\begin{align}
+\max \sum_i q_i x_i,
+\end{align}
+but rather
+\begin{align}
+\max_{\{x_i\}} \sum_i U_i(\mathcal{S}_{is})x_i
+\end{align}
+subject to purse, role, and overseas constraints, where \(U_i(\mathcal{S}_{is})\) is state dependent.
+
+This is why the same player can be a rational target in one auction state and an irrational purchase in another. It also explains the instability in early versions of the simulator. Without explicit buffers, role targets, and duplicate-role controls, the algorithm either over-purchases cheap players or freezes entirely. The current simulator resolves that by making the state vector operational.
+
+\section{Limitations and Next Steps}
+
+Three limitations are immediate.
+
+First, the current quality index \(q_i\) is based on phase-impact rankings rather than a fully estimated wins-above-replacement or win-probability-added system. The notebook sketches a richer run-value framework, but that piece is not yet fully integrated into the simulator.
+
+Second, team demand weights are calibrated rather than estimated from historical auction data. A stronger structural version would infer them from observed bidding patterns across previous IPL auctions.
+
+Third, the current auction engine now randomizes nomination order within sets and produces Monte Carlo outcome distributions, but it still does not model noisy private values directly. A richer structural version could introduce franchise-specific private signals and endogenous learning across bidding rounds.
+
+\section{Conclusion}
+
+This paper converts the IPL 2026 Rajasthan Royals auction project into a formal economics model. Using delivery-level performance data, Bayesian phase-specific impact measures, actual 2026 auction sets, and a constrained sequential English-auction simulator with randomized within-set nomination order, the model reproduces RR's two core strategic purchases identified in the project context: Ravi Bishnoi and Adam Milne.
+
+More broadly, the paper shows how auction theory and sports analytics can be combined in a tractable way. The key point is not that teams should simply buy the highest-rated players. The key point is that teams should carry endogenous walk-away prices that internalize budget, role scarcity, overseas limits, and future option value. For RR in 2026, that logic implies patience, shortlist discipline, and selective bidding rather than broad aggressive participation.
+
+At the same time, the framework is not RR specific. It is a general IPL auction template. Once a franchise's retained core, purse, overseas slots, and strategic role needs are supplied, the same model can be used to map plausible bidding strategy and simulate resulting auction outcomes.
+
+\appendix
+
+\section*{Appendix: Reproducibility}
+
+The manuscript is based on the following project files:
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{Code/A1\_code.ipynb},
+    \item \texttt{Code/rr\_auction\_simulator.py},
+    \item \texttt{Paper/generate\_paper\_tables.py},
+    \item \texttt{Data/ipl\_ball\_by\_ball.csv},
+    \item \texttt{Data/ipl\_auction\_2026\_full.xlsx},
+    \item \texttt{Data/IPL\_Auction\_2026\_Sold\_Player.csv},
+    \item \texttt{Data/auction\_simulation\_2026\_events.csv},
+    \item \texttt{Data/rr\_auction\_simulated\_buys.csv},
+    \item \texttt{Data/rr\_actual\_vs\_simulated.csv}.
+\end{itemize}
+
+\end{document}

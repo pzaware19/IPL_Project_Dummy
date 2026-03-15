@@ -1,0 +1,26 @@
+.DS_Store
+.vscode/
+__pycache__/
+*.pyc
+
+# Built dashboard bundle
+Dashboard/data/dashboard_data.js
+
+# Generated paper artifacts
+Paper/*.aux
+Paper/*.log
+Paper/*.out
+Paper/*.toc
+Paper/*.pdf
+
+# Generated auction simulation outputs
+Data/*_auction_simulated_buys*.csv
+Data/*_actual_vs_simulated*.csv
+Data/*_auction_purchase_summary*_mc.csv
+Data/*_auction_spend_summary*_mc.csv
+Data/*_auction_simulation_*events*.csv
+Data/league_auction_mc_summary_*.csv
+Data/auction_simulation_*.csv
+
+# Local temp files
+*.tmp
