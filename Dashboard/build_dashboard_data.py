@@ -693,9 +693,19 @@ def build_matchup_payload() -> dict:
     ]:
         frame[name_col] = frame[name_col].map(canonical_player_name)
 
+    bowler_options = sorted(
+        {
+            *bowler_vs_hand["bowler"].dropna().tolist(),
+            *pressure_bowling["bowler"].dropna().tolist(),
+            *head_to_head_total["bowler"].dropna().tolist(),
+            *list(bowler_phase_profiles.keys()),
+            *death_bowling["bowler"].dropna().tolist(),
+        }
+    )
+
     return {
         "batter_options": sorted(batter_vs_style["batter"].unique().tolist()),
-        "bowler_options": sorted(bowler_vs_hand["bowler"].unique().tolist()),
+        "bowler_options": bowler_options,
         "batter_vs_style": batter_vs_style.to_dict("records"),
         "bowler_vs_hand": bowler_vs_hand.to_dict("records"),
         "pressure_batting": pressure_batting.to_dict("records"),

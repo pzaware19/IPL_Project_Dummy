@@ -42,8 +42,8 @@
   function init() {
     els.batterOptions.innerHTML = data.batter_options.map((name) => `<option value="${name}"></option>`).join("");
     els.bowlerOptions.innerHTML = data.bowler_options.map((name) => `<option value="${name}"></option>`).join("");
-    els.batter.value = data.batter_options.includes("YBK Jaiswal") ? "YBK Jaiswal" : data.batter_options[0] || "";
-    els.bowler.value = data.bowler_options.includes("JJ Bumrah") ? "JJ Bumrah" : data.bowler_options[0] || "";
+    els.batter.value = data.batter_options.includes("Yashaswi Jaiswal") ? "Yashaswi Jaiswal" : data.batter_options[0] || "";
+    els.bowler.value = data.bowler_options.includes("Jasprit Bumrah") ? "Jasprit Bumrah" : data.bowler_options[0] || "";
     els.batter.addEventListener("change", render);
     els.bowler.addEventListener("change", render);
     renderDeathTables();
@@ -235,6 +235,18 @@
   }
 
   function renderBowlerTable(rows) {
+    const safeRows = rows.length
+      ? rows
+      : [
+          {
+            batter_hand: "No split available",
+            phase: "All",
+            balls: 0,
+            runs: 0,
+            wickets: 0,
+            economy: 0,
+          },
+        ];
     renderTable(
       els.bowlerTable,
       [
@@ -245,7 +257,7 @@
         { key: "wickets", label: "Wickets" },
         { key: "economy", label: "Economy", render: (value) => formatDecimal(value) },
       ],
-      rows
+      safeRows
     );
   }
 
