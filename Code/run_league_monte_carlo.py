@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import sys
 
@@ -20,7 +21,7 @@ from Code.rr_auction_simulator import (
 
 SEASON = "2026"
 DEFAULT_SEED = 0
-DEFAULT_ITERATIONS = 500
+DEFAULT_ITERATIONS = int(os.environ.get("LEAGUE_MC_ITERATIONS", "500"))
 REPRESENTATIVE_TEAM = "RR"
 
 

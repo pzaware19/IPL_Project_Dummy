@@ -53,6 +53,27 @@ PHASE_ORDER = ["powerplay", "middle", "death"]
 ACTIVE_CUTOFF_YEAR = 2025
 
 
+def ensure_auction_outputs() -> None:
+    required_paths = [DATA_DIR / "league_auction_mc_summary_2026.csv", DATA_DIR / "league_auction_simulation_2026_events.csv"]
+    team_codes = sorted(resolve_team_configs("2026").keys())
+    for code in team_codes:
+        slug = code.lower()
+        required_paths.extend(
+            [
+                DATA_DIR / f"{slug}_auction_simulated_buys_2026.csv",
+                DATA_DIR / f"{slug}_auction_purchase_summary_2026_mc.csv",
+                DATA_DIR / f"{slug}_auction_spend_summary_2026_mc.csv",
+            ]
+        )
+    if all(path.exists() for path in required_paths):
+        return
+
+    from Code.run_league_monte_carlo import main as run_league_monte_carlo_main
+
+    print("Auction outputs missing. Generating league simulation artifacts...")
+    run_league_monte_carlo_main()
+
+
 def top_records(df: pd.DataFrame, name_col: str, columns: list[str], top_n: int = 12) -> list[dict]:
     trimmed = df.head(top_n).copy()
     rows = []
@@ -706,6 +727,7 @@ def build_story_payload() -> dict:
 
 
 def main() -> None:
+    ensure_auction_outputs()
     payload = {
         "overview": build_overview_payload(),
         "phase_rankings": build_phase_payload(),
