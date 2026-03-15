@@ -15,6 +15,7 @@
     phaseMatchup: document.getElementById("phase-matchup"),
     phaseBars: document.getElementById("phase-bars"),
     phaseTable: document.getElementById("phase-table"),
+    playerHorizon: document.getElementById("player-horizon"),
     playerType: document.getElementById("player-type"),
     playerSearch: document.getElementById("player-search"),
     playerCompareSearch: document.getElementById("player-compare-search"),
@@ -315,11 +316,17 @@
   }
 
   function currentPlayerProfiles() {
-    return els.playerType.value === "batter" ? data.players.batter_profiles : data.players.bowler_profiles;
+    const profiles = els.playerType.value === "batter" ? data.players.batter_profiles : data.players.bowler_profiles;
+    if (els.playerHorizon.value !== "active") {
+      return profiles;
+    }
+    return Object.fromEntries(
+      Object.entries(profiles).filter(([, profile]) => Number(profile.summary.last_year || 0) >= 2025)
+    );
   }
 
   function refreshPlayerOptions() {
-    const options = els.playerType.value === "batter" ? data.players.batter_options : data.players.bowler_options;
+    const options = Object.keys(currentPlayerProfiles()).sort();
     els.playerOptions.innerHTML = options.map((player) => `<option value="${player}"></option>`).join("");
     if (!options.includes(els.playerSearch.value)) {
       els.playerSearch.value = options[0] || "";
@@ -330,14 +337,19 @@
   }
 
   function initPlayerLab() {
+    setOptions(els.playerHorizon, ["all_time", "active"], (value) =>
+      value === "all_time" ? "All-Time" : "Active"
+    );
     setOptions(els.playerType, ["batter", "bowler"], (value) =>
       value.charAt(0).toUpperCase() + value.slice(1)
     );
 
-    els.playerType.addEventListener("change", () => {
-      refreshPlayerOptions();
-      renderPlayerLab();
-    });
+    [els.playerHorizon, els.playerType].forEach((el) =>
+      el.addEventListener("change", () => {
+        refreshPlayerOptions();
+        renderPlayerLab();
+      })
+    );
     els.playerSearch.addEventListener("change", renderPlayerLab);
     els.playerCompareSearch.addEventListener("change", renderPlayerLab);
 
@@ -402,8 +414,9 @@
       </div>
     `;
 
+    const availableProfiles = profiles;
     const compSections = [profile, compareProfile].filter(Boolean).map((selectedProfile) => {
-      const comps = selectedProfile.comps || [];
+      const comps = (selectedProfile.comps || []).filter((comp) => availableProfiles[comp.player]);
       return `
         <div class="metric-card">
           <h5>${selectedProfile.player}</h5>
