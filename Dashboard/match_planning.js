@@ -56,20 +56,28 @@
       .join("");
   }
 
-  function render() {
-    const match = data.matches.find((row) => String(row.match_id) === els.match.value) || data.matches[0];
-    if (!match) return;
+  function currentMatch() {
+    return data.matches.find((row) => String(row.match_id) === els.match.value) || data.matches[0];
+  }
 
+  function syncLensOptions(match, preserveSelection = true) {
     const previousLens = els.lens.value;
     setOptions(els.lens, [match.home, match.away], (value) => `${value} Lens`);
-    if ([match.home, match.away].includes(previousLens)) {
+    if (preserveSelection && [match.home, match.away].includes(previousLens)) {
       els.lens.value = previousLens;
     } else {
       els.lens.value = match.home;
     }
+  }
+
+  function render() {
+    const match = currentMatch();
+    if (!match) return;
 
     const focus = els.lens.value === match.home ? match.home_analysis : match.away_analysis;
     const opposition = els.lens.value === match.home ? match.away_analysis : match.home_analysis;
+    const focusCode = els.lens.value;
+    const oppositionCode = focusCode === match.home ? match.away : match.home;
 
     els.headline.innerHTML = `
       <div class="replay-card">
@@ -84,7 +92,7 @@
       </div>
       <div class="replay-card">
         <h4>Team Lens</h4>
-        <strong>${els.lens.value}</strong>
+        <strong>${focusCode}</strong>
         <p>${focus.active_count} active players with usable evidence in the squad view.</p>
       </div>
       <div class="replay-card">
@@ -133,26 +141,26 @@
       `
     );
 
-    els.homeTitle.textContent = `${match.home} Active Core`;
-    els.awayTitle.textContent = `${match.away} Active Core`;
+    els.homeTitle.textContent = `${focusCode} Focused Active Core`;
+    els.awayTitle.textContent = `${oppositionCode} Opposition Active Core`;
     els.homeAnalysis.innerHTML = `
       <div class="insight-card">
         <h5>Top Batters</h5>
-        <div class="metric-stack">${playerCards(match.home_analysis.top_batters || [], "batting")}</div>
+        <div class="metric-stack">${playerCards(focus.top_batters || [], "batting")}</div>
       </div>
       <div class="insight-card">
         <h5>Top Bowlers</h5>
-        <div class="metric-stack">${playerCards(match.home_analysis.top_bowlers || [], "bowling")}</div>
+        <div class="metric-stack">${playerCards(focus.top_bowlers || [], "bowling")}</div>
       </div>
     `;
     els.awayAnalysis.innerHTML = `
       <div class="insight-card">
         <h5>Top Batters</h5>
-        <div class="metric-stack">${playerCards(match.away_analysis.top_batters || [], "batting")}</div>
+        <div class="metric-stack">${playerCards(opposition.top_batters || [], "batting")}</div>
       </div>
       <div class="insight-card">
         <h5>Top Bowlers</h5>
-        <div class="metric-stack">${playerCards(match.away_analysis.top_bowlers || [], "bowling")}</div>
+        <div class="metric-stack">${playerCards(opposition.top_bowlers || [], "bowling")}</div>
       </div>
     `;
 
@@ -188,7 +196,17 @@
       const match = data.matches.find((row) => String(row.match_id) === value);
       return match ? `${match.date} · ${match.label}` : value;
     });
-    [els.match, els.lens].forEach((element) => element.addEventListener("change", render));
+    const initialMatch = currentMatch();
+    if (initialMatch) {
+      syncLensOptions(initialMatch, false);
+    }
+    els.match.addEventListener("change", () => {
+      const match = currentMatch();
+      if (!match) return;
+      syncLensOptions(match, false);
+      render();
+    });
+    els.lens.addEventListener("change", render);
     render();
   }
 
