@@ -666,7 +666,13 @@
           (slot) => `
             <div class="architecture-item ${slot.filled ? "filled" : "open"}">
               <span>${slot.slot}</span>
-              <strong>${slot.player}</strong>
+              <div class="architecture-detail">
+                <strong>${slot.player}</strong>
+                <div class="pill-row wrap">
+                  ${slot.locked ? `<span class="pill accent">Locked In</span>` : ""}
+                  ${slot.is_overseas ? `<span class="pill">Overseas</span>` : ""}
+                </div>
+              </div>
             </div>
           `
         )
@@ -704,7 +710,7 @@
         <div class="metric-card">
           <h5>${team.code}</h5>
           <strong>${formatDecimal(team.overseas_pressure_pct, 1)}%</strong>
-          <p>${team.overseas_slots_left} overseas slots left across ${team.open_slots} open squad positions.</p>
+          <p>${team.overseas_slots_left} overseas slots left across ${team.open_slots} open squad positions. Current retained XI skeleton uses ${team.xi_overseas_count || 0} of ${team.xi_overseas_limit || 4} overseas spots.</p>
         </div>
       `;
     }

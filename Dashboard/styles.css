@@ -625,6 +625,16 @@ th {
   align-items: center;
 }
 
+.architecture-detail {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.architecture-detail strong {
+  text-align: right;
+}
+
 .architecture-item.filled strong {
   color: var(--ink);
 }

@@ -53,6 +53,33 @@ ACTIVE_PHASE_FILES = {
 
 PHASE_ORDER = ["powerplay", "middle", "death"]
 ACTIVE_CUTOFF_YEAR = 2025
+PLAYING_XI_OVERSEAS_LIMIT = 4
+LOCKED_XI_PLAYERS = {
+    "RR": {
+        "Riyan Parag": "captain",
+        "Ravindra Jadeja": "star all-rounder",
+    }
+}
+RETAINED_OVERSEAS_PLAYERS = {
+    "RR": {
+        "Donovan Ferreira",
+        "Jofra Archer",
+        "Kwena Maphaka",
+        "Lhuan-Dre Pretorious",
+        "Nandre Burger",
+        "Sam Curran",
+        "Shimron Hetmyer",
+    },
+    "CSK": {"Jamie Overton", "Nathan Ellis", "Noor Ahmad", "Dewald Brevis"},
+    "DC": {"Dushmantha Chameera", "Mitchell Starc", "Tristan Stubbs"},
+    "GT": {"Glenn Phillips", "Jos Buttler", "Kagiso Rabada", "Rashid Khan"},
+    "KKR": {"Rovman Powell", "Sunil Narine"},
+    "LSG": {"Aiden Markram", "Matthew Breetzke", "Mitchell Marsh", "Nicholas Pooran"},
+    "MI": {"Allah Ghazanfar", "Corbin Bosch", "Mitchell Santner", "Ryan Rickelton", "Sherfane Rutherford", "Trent Boult", "Will Jacks"},
+    "PBKS": {"Azmatullah Omarzai", "Lockie Ferguson", "Marco Jansen", "Marcus Stoinis", "Mitch Owen", "Xavier Bartlett"},
+    "RCB": {"Jacob Bethell", "Josh Hazlewood", "Nuwan Thushara", "Phil Salt", "Romario Shepherd", "Tim David"},
+    "SRH": {"Brydon Carse", "Eshan Malinga", "Heinrich Klaasen", "Kamindu Mendis", "Pat Cummins", "Travis Head"},
+}
 WICKETKEEPER_HINTS = {
     normalize_name(name)
     for name in [
@@ -664,30 +691,109 @@ def build_team_payload() -> dict:
         "utility": "Utility",
     }
     skeleton_order = ["wicketkeeper", "opener", "opener", "middle_order", "middle_order", "finisher", "all_rounder", "spinner", "pacer", "pacer", "utility"]
+    slot_fallbacks = {
+        "wicketkeeper": ["middle_order", "finisher"],
+        "opener": ["middle_order"],
+        "middle_order": ["finisher", "all_rounder", "opener"],
+        "finisher": ["all_rounder", "middle_order"],
+        "all_rounder": ["middle_order", "spinner", "pacer"],
+        "spinner": ["all_rounder", "utility", "bowler"],
+        "pacer": ["bowler", "utility", "all_rounder"],
+        "utility": ["all_rounder", "bowler", "middle_order", "finisher", "spinner", "pacer"],
+    }
 
     auction_payload = build_auction_payload()
     teams = []
     for code, config in configs.items():
         state = states[code]
         retained_players = [canonical_player_name(player) for player in config["retained_players"]]
+        retained_overseas = RETAINED_OVERSEAS_PLAYERS.get(code, set())
+        locked_players = LOCKED_XI_PLAYERS.get(code, {})
         retained_roles = []
         for player in retained_players:
             retained_roles.append(
                 {
                     "player": player,
                     "role": infer_team_player_role(player, batter_balls, bowler_balls, batter_phase_identity, player_style_lookup),
+                    "is_overseas": player in retained_overseas,
+                    "locked": player in locked_players,
+                    "lock_reason": locked_players.get(player),
                 }
             )
 
         remaining = retained_roles.copy()
-        xi_slots = []
-        for slot in skeleton_order:
-            match = next((entry for entry in remaining if entry["role"] == slot), None)
-            if match:
-                xi_slots.append({"slot": role_display[slot], "player": match["player"], "filled": True})
-                remaining.remove(match)
-            else:
-                xi_slots.append({"slot": role_display[slot], "player": "Open", "filled": False})
+        xi_slots = [{"slot_key": slot, "slot": role_display[slot], "player": "Open", "filled": False, "locked": False, "is_overseas": False, "lock_reason": None} for slot in skeleton_order]
+        overseas_in_xi = 0
+
+        def role_priority(entry: dict[str, object], target_role: str) -> tuple[float, float, float]:
+            score = 0.0
+            if entry["role"] == target_role:
+                score += 4.0
+            elif entry["role"] in slot_fallbacks.get(target_role, []):
+                score += 2.0
+            if entry.get("locked"):
+                score += 5.0
+            if not entry.get("is_overseas"):
+                score += 0.8
+            player_name = str(entry["player"])
+            score += float(batter_balls.get(player_name, 0.0) + bowler_balls.get(player_name, 0.0)) / 500.0
+            return (score, float(batter_balls.get(player_name, 0.0)), float(bowler_balls.get(player_name, 0.0)))
+
+        def choose_slot_index(entry: dict[str, object]) -> int | None:
+            preferred_roles = [entry["role"], *slot_fallbacks.get(str(entry["role"]), [])]
+            for preferred_role in preferred_roles:
+                for idx, slot in enumerate(xi_slots):
+                    if not slot["filled"] and slot["slot_key"] == preferred_role:
+                        return idx
+            for idx, slot in enumerate(xi_slots):
+                if not slot["filled"]:
+                    return idx
+            return None
+
+        def place_entry(entry: dict[str, object]) -> None:
+            nonlocal overseas_in_xi
+            idx = choose_slot_index(entry)
+            if idx is None:
+                return
+            xi_slots[idx] = {
+                "slot_key": xi_slots[idx]["slot_key"],
+                "slot": xi_slots[idx]["slot"],
+                "player": entry["player"],
+                "filled": True,
+                "locked": bool(entry.get("locked")),
+                "is_overseas": bool(entry.get("is_overseas")),
+                "lock_reason": entry.get("lock_reason"),
+            }
+            if entry.get("is_overseas"):
+                overseas_in_xi += 1
+            remaining.remove(entry)
+
+        locked_entries = [entry for entry in remaining if entry.get("locked")]
+        for entry in locked_entries:
+            place_entry(entry)
+
+        for idx, slot in enumerate(xi_slots):
+            if slot["filled"]:
+                continue
+            candidates = [
+                entry
+                for entry in remaining
+                if (
+                    entry["role"] == slot["slot_key"]
+                    or entry["role"] in slot_fallbacks.get(slot["slot_key"], [])
+                )
+                and (not entry.get("is_overseas") or overseas_in_xi < PLAYING_XI_OVERSEAS_LIMIT)
+            ]
+            if not candidates:
+                candidates = [
+                    entry
+                    for entry in remaining
+                    if not entry.get("is_overseas") or overseas_in_xi < PLAYING_XI_OVERSEAS_LIMIT
+                ]
+            if not candidates:
+                continue
+            best = sorted(candidates, key=lambda entry: role_priority(entry, slot["slot_key"]), reverse=True)[0]
+            place_entry(best)
 
         role_counts: dict[str, int] = {}
         for entry in retained_roles:
@@ -730,6 +836,8 @@ def build_team_payload() -> dict:
                 "recommended_fills": recommended_fills,
                 "role_gaps": role_gaps[:5],
                 "overseas_pressure_pct": overseas_pressure,
+                "xi_overseas_count": overseas_in_xi,
+                "xi_overseas_limit": PLAYING_XI_OVERSEAS_LIMIT,
             }
         )
     teams.sort(key=lambda item: item["auction_power"], reverse=True)
