@@ -2346,6 +2346,23 @@ def build_match_planning_payload(players_payload: dict) -> dict:
     for team_code in FINAL_SQUADS_2026:
         team_profiles[team_code] = active_team_profiles(team_code)
 
+    duel_total = (
+        ball.groupby(["batter_name", "bowler_name"])
+        .agg(runs=("runs_batter", "sum"), balls=("legal_ball", "sum"), wickets=("wicket", "sum"))
+        .reset_index()
+    )
+    duel_total["strike_rate"] = duel_total["runs"] / duel_total["balls"].clip(lower=1) * 100.0
+    duel_lookup = {
+        (row["batter_name"], row["bowler_name"]): {
+            "runs": int(row["runs"]),
+            "balls": int(row["balls"]),
+            "wickets": int(row["wickets"]),
+            "strike_rate": float(row["strike_rate"]),
+        }
+        for _, row in duel_total.iterrows()
+        if row["balls"] >= 3
+    }
+
     def team_phase_snapshot(team_code: str) -> dict[str, float]:
         active_players = team_profiles[team_code]["active_players"]
         batting_scores = {phase: [] for phase in PHASE_ORDER}
@@ -2374,14 +2391,66 @@ def build_match_planning_payload(players_payload: dict) -> dict:
 
     snapshots = {team_code: team_phase_snapshot(team_code) for team_code in FINAL_SQUADS_2026}
 
-    def top_team_players(team_code: str, kind: str, limit: int = 4) -> list[dict]:
+    def phase_score(profile: dict, phase: str) -> float:
+        return float(profile["phase_details"].get(phase, {}).get("impact_score", 0.0))
+
+    def top_phase(profile: dict, kind: str) -> str:
+        phase_values = {phase: phase_score(profile, phase) for phase in PHASE_ORDER}
+        if kind == "bowling":
+            return max(phase_values, key=phase_values.get)
+        return max(phase_values, key=phase_values.get)
+
+    def venue_bat_bonus(player: str, venue: str) -> float:
+        venue_key = CITY_ALIASES.get(venue.strip().lower(), venue.strip().lower())
+        row = venue_batting[(venue_batting["location_key"] == venue_key) & (venue_batting["batter_name"] == player)]
+        if row.empty:
+            return 0.0
+        return float(row["strike_rate"].iloc[0] - venue_batting[venue_batting["location_key"] == venue_key]["strike_rate"].mean()) / 20.0
+
+    def venue_bowl_bonus(player: str, venue: str) -> float:
+        venue_key = CITY_ALIASES.get(venue.strip().lower(), venue.strip().lower())
+        row = venue_bowling[(venue_bowling["location_key"] == venue_key) & (venue_bowling["bowler_name"] == player)]
+        if row.empty:
+            return 0.0
+        venue_mean = venue_bowling[venue_bowling["location_key"] == venue_key]["economy"].mean()
+        return float(venue_mean - row["economy"].iloc[0]) / 1.5
+
+    def matchup_edge(batter_profile: dict, bowler_profile: dict, batter_name: str, bowler_name: str) -> float:
+        batter_best = top_phase(batter_profile, "batting")
+        bowler_best = top_phase(bowler_profile, "bowling")
+        shared_phase = batter_best if batter_best == bowler_best else batter_best
+        edge = phase_score(batter_profile, shared_phase) / 12.0 - phase_score(bowler_profile, shared_phase) / 14.0
+        duel = duel_lookup.get((batter_name, bowler_name))
+        if duel:
+            edge += (duel["strike_rate"] - 120.0) / 28.0
+            edge -= duel["wickets"] * 1.8
+            edge += min(duel["balls"], 18) / 18.0
+        return edge
+
+    def rank_team_players(team_code: str, kind: str, venue: str, opponent_code: str, limit: int = 4) -> list[dict]:
         active_players = team_profiles[team_code]["active_players"]
+        opponent_active = team_profiles[opponent_code]["active_players"]
+        opponent_bowlers = [row for row in opponent_active if row["bowler"]]
+        opponent_batters = [row for row in opponent_active if row["batter"]]
         rows = []
         for row in active_players:
             profile = row["batter"] if kind == "batting" else row["bowler"]
             if not profile:
                 continue
             summary = profile["summary"]
+            if kind == "batting":
+                matchup_component = sum(
+                    matchup_edge(profile, opp["bowler"], row["player"], opp["player"])
+                    for opp in opponent_bowlers[:4]
+                ) / max(min(len(opponent_bowlers), 4), 1)
+                venue_component = venue_bat_bonus(row["player"], venue)
+            else:
+                matchup_component = sum(
+                    -matchup_edge(opp["batter"], profile, opp["player"], row["player"])
+                    for opp in opponent_batters[:4]
+                ) / max(min(len(opponent_batters), 4), 1)
+                venue_component = venue_bowl_bonus(row["player"], venue)
+            game_score = float(summary.get("impact_score", 0.0)) + 4.0 * float(summary.get("wins_added", 0.0)) + 3.0 * matchup_component + 2.0 * venue_component
             rows.append(
                 {
                     "player": row["player"],
@@ -2390,9 +2459,12 @@ def build_match_planning_payload(players_payload: dict) -> dict:
                     "wins_added": round(float(summary.get("wins_added", 0.0)), 2),
                     "style_note": profile["style"].get("style_note", ""),
                     "phase_identity": profile["style"].get("phase_identity", ""),
+                    "game_score": round(game_score, 2),
+                    "venue_boost": round(venue_component, 2),
+                    "matchup_score": round(matchup_component, 2),
                 }
             )
-        rows.sort(key=lambda item: (item["impact_score"], item["wins_added"]), reverse=True)
+        rows.sort(key=lambda item: (item["game_score"], item["impact_score"], item["wins_added"]), reverse=True)
         return rows[:limit]
 
     def phase_label(key: str) -> str:
@@ -2408,8 +2480,10 @@ def build_match_planning_payload(players_payload: dict) -> dict:
     def build_swot(team_code: str, opponent_code: str, venue: str) -> dict[str, list[str]]:
         team = snapshots[team_code]
         opponent = snapshots[opponent_code]
-        top_batters = top_team_players(team_code, "batting", limit=3)
-        top_bowlers = top_team_players(team_code, "bowling", limit=3)
+        top_batters = rank_team_players(team_code, "batting", venue, opponent_code, limit=3)
+        top_bowlers = rank_team_players(team_code, "bowling", venue, opponent_code, limit=3)
+        opp_batters = rank_team_players(opponent_code, "batting", venue, team_code, limit=2)
+        opp_bowlers = rank_team_players(opponent_code, "bowling", venue, team_code, limit=2)
         strongest_key = max(
             ["bat_powerplay", "bat_middle", "bat_death", "bowl_powerplay", "bowl_middle", "bowl_death"],
             key=lambda key: team[key],
@@ -2429,69 +2503,78 @@ def build_match_planning_payload(players_payload: dict) -> dict:
         strengths = []
         if top_batters:
             strengths.append(
-                f"Active batting engine is led by {', '.join(row['player'] for row in top_batters[:2])}, giving {team_code} its best read in {phase_label(strongest_key)}."
+                f"{team_code}'s most favorable batting contest is driven by {', '.join(row['player'] for row in top_batters[:2])}, who rate best into {opponent_code}'s likely bowling mix at {venue}."
             )
         if top_bowlers:
             strengths.append(
-                f"Bowling control comes from {', '.join(row['player'] for row in top_bowlers[:2])}, with the strongest defensive edge in {phase_label(max(['bowl_powerplay','bowl_middle','bowl_death'], key=lambda key: team[key]))}."
+                f"The cleanest bowling matchup comes from {', '.join(row['player'] for row in top_bowlers[:2])}, whose active phase profile lines up well against {opponent_code}'s batting core."
             )
         strengths.append(
-            f"Active-core wins-added base is {team['wins_added_total']:.2f}, which gives {team_code} a stable contribution floor from proven 2025 performers."
+            f"Venue and matchup scoring still leave {team_code} with an active-core wins-added base of {team['wins_added_total']:.2f}, so the floor remains credible even before fringe players are considered."
         )
 
         weaknesses = [
-            f"The weakest active phase read is {phase_label(weakest_key)}, so {team_code} may need tactical cover there.",
-            f"{team['no_sample_count']} squad members have no active-sample evidence in the dashboard, which raises uncertainty beyond the established core.",
+            f"{team_code}'s thinnest matchup zone in this fixture is {phase_label(weakest_key)}, which {opponent_code} can attack if the game drifts there.",
+            f"{team['no_sample_count']} squad members still sit outside the active evidence set, so the game plan should stay concentrated around the proven core rather than the fringe bench.",
         ]
-        if len(team_profiles[team_code]["active_players"]) < 12:
-            weaknesses.append("The active-data pool is shallow relative to the full squad, so bench options are less evidence-backed.")
+        if opp_batters:
+            weaknesses.append(f"{', '.join(row['player'] for row in opp_batters)} project as the biggest opponent batting threats in this specific matchup.")
         else:
-            weaknesses.append("There is still a gap between squad depth and trusted active evidence, especially for fringe auction additions.")
+            weaknesses.append("Opponent-specific batting threats are less concentrated, but the uncertainty around low-sample squad pieces still matters.")
 
         opportunities = [
-            f"{team_code} should press its {phase_label(strongest_key)} edge against {opponent_code}'s softer {phase_label(min(['bat_powerplay','bat_middle','bat_death','bowl_powerplay','bowl_middle','bowl_death'], key=lambda key: opponent[key]))} profile.",
+            f"{team_code} should lean into {phase_label(strongest_key)} because that is where the current matchup matrix gives the clearest edge over {opponent_code}.",
         ]
         if venue_profile.get("avg_total") is not None:
             pace_phase = next((row for row in venue_profile.get("phase_conditions", []) if row["phase"] == "powerplay"), None)
             if pace_phase and pace_phase["run_rate"] >= 9.0:
-                opportunities.append(f"{venue} has rewarded early scoring, so {team_code} can attack the powerplay before the game slows down.")
+                opportunities.append(f"{venue} has rewarded early scoring, so {team_code} should look to win the powerplay rather than waiting for a middle-overs reset.")
             else:
-                opportunities.append(f"{venue} has not been a pure run-glut venue, so {team_code} can win by owning control phases rather than chasing only boundary pressure.")
+                opportunities.append(f"{venue} has not been a pure run-glut venue, so {team_code} can create separation by controlling the quieter phases and forcing {opponent_code} to overhit.")
         if venue_hits:
-            opportunities.append(f"Venue history gives extra confidence to {', '.join(venue_hits[:2])} at {venue}.")
+            opportunities.append(f"Venue history gives extra confidence to {', '.join(venue_hits[:2])} at {venue}, which strengthens the tactical case for using them in their best phase.")
         else:
-            opportunities.append(f"There is no dominant venue specialist in the active sample, so {team_code} can lean more on overall phase quality than ground-specific superstition.")
+            opportunities.append(f"There is no dominant venue specialist in the active sample, so {team_code} should trust the matchup edges more than venue folklore.")
 
         threats = [
-            f"{opponent_code}'s biggest live edge is {phase_label(opponent_best)}, which is the phase {team_code} needs to contain most carefully.",
+            f"{opponent_code}'s biggest live edge in this fixture remains {phase_label(opponent_best)}, and that phase has to be the first item on the defensive brief.",
         ]
-        opp_batters = top_team_players(opponent_code, "batting", limit=2)
-        opp_bowlers = top_team_players(opponent_code, "bowling", limit=2)
         if opp_batters:
-            threats.append(f"Opposition batting threat is driven by {', '.join(row['player'] for row in opp_batters)}, so powerplay and set-batter control matter.")
+            threats.append(f"Opposition batting threat is driven by {', '.join(row['player'] for row in opp_batters)}, whose current matchup scores are strongest into this game.")
         if opp_bowlers:
-            threats.append(f"{', '.join(row['player'] for row in opp_bowlers)} can flip the innings with ball in hand if {team_code} lets the matchup drift into their best phase.")
+            threats.append(f"{', '.join(row['player'] for row in opp_bowlers)} can flip the innings with ball in hand if {team_code} lets the contest drift into their best phase windows.")
 
         return {"strengths": strengths[:3], "weaknesses": weaknesses[:3], "opportunities": opportunities[:3], "threats": threats[:3]}
 
     def build_tactics(team_code: str, opponent_code: str, venue: str) -> list[str]:
         team = snapshots[team_code]
-        opponent = snapshots[opponent_code]
-        top_batters = top_team_players(team_code, "batting", limit=2)
-        top_bowlers = top_team_players(team_code, "bowling", limit=2)
+        top_batters = rank_team_players(team_code, "batting", venue, opponent_code, limit=2)
+        top_bowlers = rank_team_players(team_code, "bowling", venue, opponent_code, limit=2)
+        opp_batters = rank_team_players(opponent_code, "batting", venue, team_code, limit=2)
+        opp_bowlers = rank_team_players(opponent_code, "bowling", venue, team_code, limit=2)
         plans = []
         strongest_bat = max(["bat_powerplay", "bat_middle", "bat_death"], key=lambda key: team[key])
         strongest_bowl = max(["bowl_powerplay", "bowl_middle", "bowl_death"], key=lambda key: team[key])
         if top_batters:
-            plans.append(f"Batting plan: funnel the innings through {top_batters[0]['player']} and {top_batters[1]['player'] if len(top_batters) > 1 else top_batters[0]['player']} to maximize {phase_label(strongest_bat)}.")
+            attack_targets = ", ".join(row["player"] for row in opp_bowlers[:2]) if opp_bowlers else opponent_code
+            plans.append(
+                f"Batting plan: build the innings around {top_batters[0]['player']}"
+                + (
+                    f" with {top_batters[1]['player']} as the second scoring pillar"
+                    if len(top_batters) > 1
+                    else ""
+                )
+                + f", and target {attack_targets} in {phase_label(strongest_bat)} because that is where the current contest matrix is most favorable."
+            )
         if top_bowlers:
-            plans.append(f"Bowling plan: use {top_bowlers[0]['player']} to control {phase_label(strongest_bowl)} and keep {opponent_code}'s scoring windows compressed.")
+            target = opp_batters[0]["player"] if opp_batters else opponent_code
+            plans.append(f"Bowling plan: use {top_bowlers[0]['player']} to attack {target} and own {phase_label(strongest_bowl)} before {opponent_code} can settle.")
         venue_profile = venue_profiles.get(venue, {})
         avg_total = venue_profile.get("avg_total")
         if avg_total and avg_total >= 180:
-            plans.append(f"Venue plan: {venue} has historically produced {avg_total:.0f}-plus innings, so batting intent must stay proactive rather than preservation-heavy.")
+            plans.append(f"Venue plan: {venue} has historically produced {avg_total:.0f}-plus innings, so {team_code} should front-load intent and avoid leaving too much scoring for the final overs.")
         else:
-            plans.append(f"Venue plan: {venue} is not purely a free-scoring venue in the sample, so fielding and phase control can create separation.")
+            plans.append(f"Venue plan: {venue} is not purely a free-scoring venue in the sample, so {team_code} should emphasize control, field placement, and matchup discipline over blind acceleration.")
         return plans[:3]
 
     matches = []
@@ -2513,15 +2596,15 @@ def build_match_planning_payload(players_payload: dict) -> dict:
                 "home_analysis": {
                     "swot": build_swot(home, away, venue),
                     "tactics": build_tactics(home, away, venue),
-                    "top_batters": top_team_players(home, "batting"),
-                    "top_bowlers": top_team_players(home, "bowling"),
+                    "top_batters": rank_team_players(home, "batting", venue, away),
+                    "top_bowlers": rank_team_players(home, "bowling", venue, away),
                     "active_count": snapshots[home]["active_count"],
                 },
                 "away_analysis": {
                     "swot": build_swot(away, home, venue),
                     "tactics": build_tactics(away, home, venue),
-                    "top_batters": top_team_players(away, "batting"),
-                    "top_bowlers": top_team_players(away, "bowling"),
+                    "top_batters": rank_team_players(away, "batting", venue, home),
+                    "top_bowlers": rank_team_players(away, "bowling", venue, home),
                     "active_count": snapshots[away]["active_count"],
                 },
             }
