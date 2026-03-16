@@ -13,7 +13,11 @@
     awayAnalysis: document.getElementById("away-team-analysis"),
     swot: document.getElementById("match-swot"),
     tactics: document.getElementById("match-tactics"),
+    aiButton: document.getElementById("ai-match-brief-button"),
+    briefStatus: document.getElementById("match-brief-status"),
+    brief: document.getElementById("match-brief"),
   };
+  const briefCache = new Map();
 
   function formatDecimal(value, digits = 2) {
     return Number(value || 0).toFixed(digits);
@@ -38,6 +42,23 @@
       <div class="insight-card">
         <h5>${title}</h5>
         <ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>
+      </div>
+    `;
+  }
+
+  function briefCard(title, content, isList = false) {
+    if (isList) {
+      return `
+        <div class="insight-card">
+          <h5>${title}</h5>
+          <ul>${(content || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+        </div>
+      `;
+    }
+    return `
+      <div class="insight-card">
+        <h5>${title}</h5>
+        <p>${content || ""}</p>
       </div>
     `;
   }
@@ -191,6 +212,72 @@
     `;
   }
 
+  function currentBriefKey() {
+    const match = currentMatch();
+    if (!match) return "";
+    return `${match.match_id}:${els.lens.value}`;
+  }
+
+  function renderBrief(payload) {
+    if (!payload || !payload.brief) {
+      els.brief.innerHTML = "";
+      return;
+    }
+    const brief = payload.brief;
+    els.brief.innerHTML = `
+      ${briefCard("Headline", brief.headline)}
+      ${briefCard("Opening Call", brief.opening_call)}
+      ${briefCard("Why This Matchup Is Live", brief.why_this_matchup_is_live)}
+      ${briefCard("Tactical Edges", brief.tactical_edges, true)}
+      ${briefCard("Matchup Watch", brief.matchup_watch, true)}
+      ${briefCard("Venue Read", brief.venue_read)}
+      ${briefCard("Risk Flags", brief.risk_flags, true)}
+      ${briefCard("Recommended Plan", brief.recommended_plan, true)}
+    `;
+  }
+
+  async function generateBrief() {
+    const match = currentMatch();
+    if (!match) return;
+    const key = currentBriefKey();
+    if (briefCache.has(key)) {
+      els.briefStatus.textContent = `Cached live brief for ${els.lens.value} using ${briefCache.get(key).model}.`;
+      renderBrief(briefCache.get(key));
+      return;
+    }
+
+    els.aiButton.disabled = true;
+    els.briefStatus.textContent = "Generating live AI brief...";
+    els.brief.innerHTML = "";
+    try {
+      const response = await fetch("/api/match-brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          match_id: match.match_id,
+          team_lens: els.lens.value,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to generate live brief");
+      }
+      briefCache.set(key, payload);
+      els.briefStatus.textContent = `Live brief generated with ${payload.model} for ${payload.team_lens}.`;
+      renderBrief(payload);
+    } catch (error) {
+      els.briefStatus.textContent = `Live brief unavailable: ${error.message}`;
+      els.brief.innerHTML = `
+        <div class="insight-card">
+          <h5>Setup Needed</h5>
+          <p>Configure <code>OPENAI_API_KEY</code> on the dashboard server to enable the external LLM match brief.</p>
+        </div>
+      `;
+    } finally {
+      els.aiButton.disabled = false;
+    }
+  }
+
   function init() {
     setOptions(els.match, data.matches.map((row) => String(row.match_id)), (value) => {
       const match = data.matches.find((row) => String(row.match_id) === value);
@@ -204,9 +291,16 @@
       const match = currentMatch();
       if (!match) return;
       syncLensOptions(match, false);
+      els.briefStatus.textContent = "";
+      els.brief.innerHTML = "";
       render();
     });
-    els.lens.addEventListener("change", render);
+    els.lens.addEventListener("change", () => {
+      els.briefStatus.textContent = "";
+      els.brief.innerHTML = "";
+      render();
+    });
+    els.aiButton.addEventListener("click", generateBrief);
     render();
   }
 
