@@ -5,7 +5,6 @@
   const roleMarket = data.auction.role_market;
   const els = {
     team: document.getElementById("draft-team"),
-    horizon: document.getElementById("draft-horizon"),
     role: document.getElementById("draft-role"),
     market: document.getElementById("draft-market"),
     sort: document.getElementById("draft-sort"),
@@ -80,9 +79,7 @@
       value_surplus: Number(row.base_ceiling || 0) - Number(row.expected_price || row.reserve_price || 0),
     }));
 
-    if (els.horizon.value === "active") {
-      rows = rows.filter((row) => row.active_flag);
-    }
+    rows = rows.filter((row) => row.active_flag);
     if (role !== "all") {
       rows = rows.filter((row) => row.role_bucket === role);
     }
@@ -164,8 +161,7 @@
         alt: row.is_overseas,
       }))
     );
-    const activeRows = rows.filter((row) => row.active_flag).length;
-    els.note.textContent = `${rows.length} board rows after filters. ${activeRows} carry an active-2025 tag. Overseas targets are shown with teal bars.`;
+    els.note.textContent = `${rows.length} active board rows after filters. Overseas targets are shown with teal bars.`;
   }
 
   function render() {
@@ -177,11 +173,10 @@
 
   function init() {
     setOptions(els.team, Object.keys(teams));
-    setOptions(els.horizon, ["all_time", "active"], (value) => (value === "all_time" ? "All-Time Auction Pool" : "Active 2025 Tagged"));
     setOptions(els.role, ["all", ...roleMarket.roles], (value) => (value === "all" ? "All Role Buckets" : titleize(value)));
     setOptions(els.market, ["all", "domestic_only", "overseas_only"], (value) => titleize(value));
     setOptions(els.sort, ["quality_score", "team_share", "value_surplus", "age", "ipl_matches"], (value) => titleize(value));
-    [els.team, els.horizon, els.role, els.market, els.sort].forEach((element) => element.addEventListener("change", render));
+    [els.team, els.role, els.market, els.sort].forEach((element) => element.addEventListener("change", render));
     render();
   }
 
