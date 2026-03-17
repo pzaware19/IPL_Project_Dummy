@@ -1,0 +1,174 @@
+team_code,player_name_raw,salary_lakh,salary_cr,is_overseas_flag,trade_marker
+CSK,Anshul Kamboj,340,3.4,0,0
+DC,Abhishek Porel,400,4.0,0,0
+GT,Anuj Rawat,30,0.3,0,0
+KKR,Ajinkya Rahane,150,1.5,0,0
+LSG,Abdul Samad,420,4.2,0,0
+CSK,Gurjapneet Singh,220,2.2,0,0
+DC,Ajay Mandal,30,0.3,0,0
+GT,Glenn Phillips,200,2.0,1,0
+KKR,Angkrish Raghuvanshi,300,3.0,0,0
+LSG,Aiden Markram,200,2.0,1,0
+CSK,Jamie Overton,150,1.5,1,0
+DC,Ashutosh Sharma,380,3.8,0,0
+GT,Gurnoor Singh Brar,130,1.3,0,0
+KKR,Anukul Roy,40,0.4,0,0
+LSG,Akash Singh,30,0.3,0,0
+CSK,MS Dhoni,400,4.0,0,0
+DC,Axar Patel,1650,16.5,0,0
+GT,Ishant Sharma,75,0.75,0,0
+KKR,Harshit Rana,400,4.0,0,0
+LSG,Arjun Tendulkar (T),30,0.3,0,1
+CSK,Mukesh Choudhary,30,0.3,0,0
+DC,Dushmantha Chameera,75,0.75,1,0
+GT,Jayant Yadav,75,0.75,0,0
+KKR,Manish Pandey,75,0.75,0,0
+LSG,Arshin Kulkarni,30,0.3,0,0
+CSK,Nathan Ellis,200,2.0,1,0
+DC,Karun Nair,50,0.5,0,0
+GT,Jos Buttler,1575,15.75,1,0
+KKR,Ramandeep Singh,400,4.0,0,0
+LSG,Avesh Khan,975,9.75,0,0
+CSK,Noor Ahmad,1000,10.0,1,0
+DC,KL Rahul,1400,14.0,0,0
+GT,Kagiso Rabada,1075,10.75,1,0
+KKR,Rinku Singh,1300,13.0,0,0
+LSG,Ayush Badoni,400,4.0,0,0
+CSK,Ramakrishna Ghosh,30,0.3,0,0
+DC,Kuldeep Yadav,1325,13.25,0,0
+GT,Kumar Kushagra,65,0.65,0,0
+KKR,Rovman Powell,150,1.5,1,0
+LSG,Digvesh Rathi,30,0.3,0,0
+CSK,Sanju Samson (T),1800,18.0,0,1
+DC,Madhav Tiwari,40,0.4,0,0
+GT,Manav Suthar,30,0.3,0,0
+KKR,Sunil Narine,1200,12.0,1,0
+LSG,Himmat Singh,30,0.3,0,0
+CSK,Ruturaj Gaikwad,1800,18.0,0,0
+DC,Mitchell Starc,1175,11.75,1,0
+GT,Mohammad Siraj,1225,12.25,0,0
+KKR,Umran Malik,75,0.75,0,0
+LSG,Manimaran Siddharth,75,0.75,0,0
+CSK,Shivam Dube,1200,12.0,0,0
+DC,Mukesh Kumar,800,8.0,0,0
+GT,Mohd. Arshad Khan,130,1.3,0,0
+KKR,Vaibhav Arora,180,1.8,0,0
+LSG,Matthew Breetzke,75,0.75,1,0
+CSK,Shreyas Gopal,30,0.3,0,0
+DC,Nitish Rana (T),420,4.2,0,1
+GT,Nishant Sindhu,30,0.3,0,0
+KKR,Varun Chakaravarthy,1200,12.0,0,0
+LSG,Mayank Yadav,1100,11.0,0,0
+CSK,Syed Khaleel Ahmed,480,4.8,0,0
+DC,Sameer Rizvi,95,0.95,0,0
+GT,Prasidh Krishna,950,9.5,0,0
+LSG,Md Shami (T),1000,10.0,0,1
+CSK,Ayush Mhatre,30,0.3,0,0
+DC,T. Natarajan,1075,10.75,0,0
+GT,R. Sai Kishore,200,2.0,0,0
+LSG,Mitchell Marsh,340,3.4,1,0
+CSK,Dewald Brevis,220,2.2,1,0
+DC,Tripurana Vijay,30,0.3,0,0
+GT,Rahul Tewatia,400,4.0,0,0
+LSG,Mohsin Khan,400,4.0,0,0
+CSK,Urvil Patel,30,0.3,0,0
+DC,Tristan Stubbs,1000,10.0,1,0
+GT,Rashid Khan,1800,18.0,1,0
+LSG,Nicholas Pooran,2100,21.0,1,0
+DC,Vipraj Nigam,50,0.5,0,0
+GT,Sai Sudharsan,850,8.5,0,0
+LSG,Prince Yadav,30,0.3,0,0
+GT,Shahrukh Khan,400,4.0,0,0
+LSG,Rishabh Pant,2700,27.0,0,0
+GT,Shubman Gill,1650,16.5,0,0
+LSG,Shahbaz Ahmed,240,2.4,0,0
+GT,Washington Sundar,320,3.2,0,0
+MI,Allah Ghazanfar,480,4.8,1,0
+PBKS,Arshdeep Singh,1800,18.0,0,0
+RR,Dhruv Jurel,1400,14.0,0,0
+RCB,Abhinandan Singh,30,0.3,0,0
+SRH,Abhishek Sharma,1400,14.0,0,0
+MI,Ashwani Kumar,30,0.3,0,0
+PBKS,Azmatullah Omarzai,240,2.4,1,0
+RR,Donovan Ferreira(T),100,1.0,1,1
+RCB,Bhuvneshwar Kumar,1075,10.75,0,0
+SRH,Aniket Verma,30,0.3,0,0
+MI,Corbin Bosch,75,0.75,1,0
+PBKS,Harnoor Pannu,30,0.3,0,0
+RR,Jofra Archer,1250,12.5,1,0
+RCB,Devdutt Padikkal,200,2.0,0,0
+SRH,Brydon Carse,100,1.0,1,0
+MI,Deepak Chahar,925,9.25,0,0
+PBKS,Harpreet Brar,150,1.5,0,0
+RR,Kwena Maphaka,150,1.5,1,0
+RCB,Jacob Bethell,260,2.6,1,0
+SRH,Eshan Malinga,120,1.2,1,0
+MI,Hardik Pandya,1635,16.35,0,0
+PBKS,Lockie Ferguson,200,2.0,1,0
+RR,Lhuan-Dre Pretorious,30,0.3,1,0
+RCB,Jitesh Sharma,1100,11.0,0,0
+SRH,Harsh Dubey,30,0.3,0,0
+MI,Jasprit Bumrah,1800,18.0,0,0
+PBKS,Marco Jansen,700,7.0,1,0
+RR,Nandre Burger,350,3.5,1,0
+RCB,Josh Hazlewood,1250,12.5,1,0
+SRH,Harshal Patel,800,8.0,0,0
+MI,Mayank Markande (T),30,0.3,0,1
+PBKS,Marcus Stoinis,1100,11.0,1,0
+RR,Ravindra Jadeja (T),1400,14.0,0,1
+RCB,Krunal Pandya,575,5.75,0,0
+SRH,Heinrich Klaasen,2300,23.0,1,0
+MI,Mitchell Santner,200,2.0,1,0
+PBKS,Mitch Owen,300,3.0,1,0
+RR,Riyan Parag,1400,14.0,0,0
+RCB,Nuwan Thushara,160,1.6,1,0
+SRH,Ishan Kishan,1125,11.25,0,0
+MI,Naman Dhir,525,5.25,0,0
+PBKS,Musheer Khan,30,0.3,0,0
+RR,Sam Curran (T),240,2.4,1,1
+RCB,Phil Salt,1150,11.5,1,0
+SRH,Jaydev Unadkat,100,1.0,0,0
+MI,Raghu Sharma,30,0.3,0,0
+PBKS,Nehal Wadhera,420,4.2,0,0
+RR,Sandeep Sharma,400,4.0,0,0
+RCB,Rajat Patidar,1100,11.0,0,0
+SRH,Kamindu Mendis,75,0.75,1,0
+MI,Raj Angad Bawa,30,0.3,0,0
+PBKS,Prabhsimran Singh,400,4.0,0,0
+RR,Shimron Hetmyer,1100,11.0,1,0
+RCB,Rasikh Dar,600,6.0,0,0
+SRH,Nitish Kumar Reddy,600,6.0,0,0
+MI,Robin Minz,65,0.65,0,0
+PBKS,Priyansh Arya,380,3.8,0,0
+RR,Shubham Dubey,80,0.8,0,0
+RCB,Romario Shepherd,150,1.5,1,0
+SRH,Pat Cummins,1800,18.0,1,0
+MI,Rohit Sharma,1630,16.3,0,0
+PBKS,Pyla Avinash,30,0.3,0,0
+RR,Tushar Deshpande,650,6.5,0,0
+RCB,Suyash Sharma,260,2.6,0,0
+SRH,Smaran Ravichandaran,30,0.3,0,0
+MI,Ryan Rickelton,100,1.0,1,0
+PBKS,Shashank Singh,550,5.5,0,0
+RR,Vaibhav Suryavanshi,110,1.1,0,0
+RCB,Swapnil Singh,50,0.5,0,0
+SRH,Travis Head,1400,14.0,1,0
+MI,Shardul Thakur (T),200,2.0,0,1
+PBKS,Shreyas Iyer,2675,26.75,0,0
+RR,Yashaswi Jaiswal,1800,18.0,0,0
+RCB,Tim David,300,3.0,1,0
+SRH,Zeeshan Ansari,40,0.4,0,0
+MI,Sherfane Rutherford (T),260,2.6,1,1
+PBKS,Suryansh Shedge,30,0.3,0,0
+RR,Yudhvir Charak,35,0.35,0,0
+RCB,Virat Kohli,2100,21.0,0,0
+MI,Suryakumar Yadav,1635,16.35,0,0
+PBKS,Vishnu Vinod,95,0.95,0,0
+RCB,Yash Dayal,500,5.0,0,0
+MI,Tilak Verma,800,8.0,0,0
+PBKS,Vyshak Vijaykumar,180,1.8,0,0
+MI,Trent Boult,1250,12.5,1,0
+PBKS,Xavier Bartlett,80,0.8,1,0
+MI,Will Jacks,525,5.25,1,0
+PBKS,Yash Thakur,160,1.6,0,0
+PBKS,Yuzvendra Chahal,1800,18.0,0,0

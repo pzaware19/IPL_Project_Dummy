@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 
+import numpy as np
 import pandas as pd
 
 
@@ -3030,6 +3031,227 @@ def build_batter_diagnostics_payload(players_payload: dict) -> dict:
     }
 
 
+def build_salary_value_payload(players_payload: dict) -> dict:
+    salaries = pd.read_csv(DATA_DIR / "ipl_salaries_2026.csv")
+    salaries["player"] = (
+        salaries["player_name_raw"]
+        .astype(str)
+        .str.replace("*", "", regex=False)
+        .str.replace("(T)", "", regex=False)
+        .str.strip()
+        .map(canonical_player_name)
+    )
+
+    squad_lookup = {
+        canonical_player_name(entry["player"]): {"team_code": team_code, "role": entry["role"]}
+        for team_code, squad in FINAL_SQUADS_2026.items()
+        for entry in squad
+    }
+
+    batter_profiles = players_payload["batter_profiles"]
+    bowler_profiles = players_payload["bowler_profiles"]
+
+    rows = []
+    for _, salary_row in salaries.iterrows():
+        player = salary_row["player"]
+        batter = batter_profiles.get(player)
+        bowler = bowler_profiles.get(player)
+        last_year = max(
+            int((batter or {}).get("summary", {}).get("last_year", 0)),
+            int((bowler or {}).get("summary", {}).get("last_year", 0)),
+        )
+        if last_year < ACTIVE_CUTOFF_YEAR:
+            continue
+
+        batting_summary = (batter or {}).get("summary", {})
+        bowling_summary = (bowler or {}).get("summary", {})
+        squad_meta = squad_lookup.get(player, {})
+        role = str(squad_meta.get("role", "") or "").lower()
+        batting_balls = int(batting_summary.get("balls", 0))
+        bowling_balls = int(bowling_summary.get("balls", 0))
+        has_batting_signal = batter is not None and batting_balls >= 60
+        has_bowling_signal = bowler is not None and bowling_balls >= 60
+        if "wicketkeeper" in role:
+            role_group = "Wicketkeeper"
+        elif "all-rounder" in role:
+            role_group = "All-rounder"
+        elif "bowler" in role:
+            role_group = "Bowler"
+        elif "batter" in role:
+            role_group = "Batter"
+        elif has_batting_signal and has_bowling_signal:
+            role_group = "All-rounder"
+        elif has_bowling_signal:
+            role_group = "Bowler"
+        else:
+            role_group = "Batter"
+
+        batting_impact = float(batting_summary.get("impact_score", 0.0)) if has_batting_signal else 0.0
+        bowling_impact = float(bowling_summary.get("impact_score", 0.0)) if has_bowling_signal else 0.0
+        batting_wins = float(batting_summary.get("wins_added", 0.0)) if has_batting_signal else 0.0
+        bowling_wins = float(bowling_summary.get("wins_added", 0.0)) if has_bowling_signal else 0.0
+        total_impact = batting_impact + bowling_impact
+        total_wins = batting_wins + bowling_wins
+        matches = max(int(batting_summary.get("matches", 0)), int(bowling_summary.get("matches", 0)))
+        batting_phase_peaks = [float(item.get("value", 0.0)) for item in (batter or {}).get("radar", [])[:3]] if has_batting_signal else []
+        bowling_phase_peaks = [float(item.get("value", 0.0)) for item in (bowler or {}).get("radar", [])[:3]] if has_bowling_signal else []
+        peak_phase_pct = max(batting_phase_peaks + bowling_phase_peaks + [0.0])
+        rows.append(
+            {
+                "player": player,
+                "team_code": squad_meta.get("team_code", salary_row["team_code"]),
+                "role_group": role_group,
+                "salary_cr": float(salary_row["salary_cr"]),
+                "salary_lakh": int(salary_row["salary_lakh"]),
+                "is_overseas": int(salary_row["is_overseas_flag"]),
+                "trade_marker": int(salary_row["trade_marker"]),
+                "batting_impact": batting_impact,
+                "bowling_impact": bowling_impact,
+                "total_impact": total_impact,
+                "batting_wins_added": batting_wins,
+                "bowling_wins_added": bowling_wins,
+                "total_wins_added": total_wins,
+                "matches": matches,
+                "peak_phase_pct": peak_phase_pct,
+                "has_batting": int(has_batting_signal),
+                "has_bowling": int(has_bowling_signal),
+            }
+        )
+
+    value_df = pd.DataFrame(rows)
+    if value_df.empty:
+        return {"players": [], "teams": [], "methodology": {}}
+
+    def pct(series: pd.Series) -> pd.Series:
+        return series.rank(pct=True).fillna(0.0)
+
+    value_df["impact_pct"] = pct(value_df["total_impact"])
+    value_df["wins_pct"] = pct(value_df["total_wins_added"])
+    value_df["matches_pct"] = pct(value_df["matches"])
+    value_df["peak_pct"] = pct(value_df["peak_phase_pct"])
+    value_df["performance_score"] = (
+        100
+        * (
+            0.34 * value_df["impact_pct"]
+            + 0.34 * value_df["wins_pct"]
+            + 0.16 * value_df["matches_pct"]
+            + 0.16 * value_df["peak_pct"]
+        )
+    )
+
+    X = pd.DataFrame(
+        {
+            "impact_pct": value_df["impact_pct"],
+            "wins_pct": value_df["wins_pct"],
+            "matches_pct": value_df["matches_pct"],
+            "peak_pct": value_df["peak_pct"],
+            "has_bowling": value_df["has_bowling"],
+            "is_overseas": value_df["is_overseas"],
+            "trade_marker": value_df["trade_marker"],
+        }
+    )
+    role_dummies = pd.get_dummies(value_df["role_group"], prefix="role", dtype=float)
+    X = pd.concat([X, role_dummies], axis=1)
+    X.insert(0, "intercept", 1.0)
+    y = np.log1p(value_df["salary_cr"].clip(lower=0.3))
+    beta, *_ = np.linalg.lstsq(X.to_numpy(dtype=float), y.to_numpy(dtype=float), rcond=None)
+    predicted = X.to_numpy(dtype=float) @ beta
+    value_df["fair_value_cr"] = np.maximum(np.expm1(predicted), 0.3)
+    value_df["value_gap_cr"] = value_df["fair_value_cr"] - value_df["salary_cr"]
+    value_df["salary_value_index"] = 100.0 * value_df["fair_value_cr"] / value_df["salary_cr"].clip(lower=0.3)
+    gap_scale = max(float(value_df["value_gap_cr"].std()), 0.75)
+    value_df["valuation_score"] = 50.0 + 28.0 * np.tanh(value_df["value_gap_cr"] / gap_scale)
+
+    def value_band(row: pd.Series) -> str:
+        if row["salary_value_index"] >= 120 and row["value_gap_cr"] >= 1.0:
+            return "Undervalued"
+        if row["salary_value_index"] <= 80 and row["value_gap_cr"] <= -1.0:
+            return "Overvalued"
+        return "Fair Value"
+
+    value_df["valuation_band"] = value_df.apply(value_band, axis=1)
+
+    def explain_row(row: pd.Series) -> str:
+        strengths = []
+        if row["impact_pct"] >= 0.8:
+            strengths.append("elite impact profile")
+        if row["wins_pct"] >= 0.8:
+            strengths.append("strong wins-added record")
+        if row["matches_pct"] >= 0.8:
+            strengths.append("deep IPL sample")
+        if row["peak_pct"] >= 0.8:
+            strengths.append("high phase ceiling")
+        strength_text = ", ".join(strengths[:2]) if strengths else "mixed performance profile"
+        if row["valuation_band"] == "Undervalued":
+            return f"Current salary looks light relative to a {strength_text}."
+        if row["valuation_band"] == "Overvalued":
+            return f"Current salary is rich versus a {strength_text}."
+        return f"Current salary broadly tracks a {strength_text}."
+
+    value_df["explanation"] = value_df.apply(explain_row, axis=1)
+
+    team_summary = (
+        value_df.groupby("team_code")
+        .agg(
+            avg_value_index=("salary_value_index", "mean"),
+            total_gap_cr=("value_gap_cr", "sum"),
+            undervalued_count=("valuation_band", lambda values: int((pd.Series(values) == "Undervalued").sum())),
+            overvalued_count=("valuation_band", lambda values: int((pd.Series(values) == "Overvalued").sum())),
+        )
+        .reset_index()
+        .round({"avg_value_index": 1, "total_gap_cr": 2})
+        .sort_values(["total_gap_cr", "avg_value_index"], ascending=[False, False])
+    )
+
+    player_records = (
+        value_df.sort_values(["salary_value_index", "performance_score"], ascending=[False, False])
+        .round(
+            {
+                "salary_cr": 2,
+                "fair_value_cr": 2,
+                "value_gap_cr": 2,
+                "salary_value_index": 1,
+                "valuation_score": 1,
+                "performance_score": 1,
+                "total_impact": 2,
+                "total_wins_added": 2,
+            }
+        )
+        .to_dict("records")
+    )
+
+    return {
+        "players": player_records,
+        "teams": team_summary.to_dict("records"),
+        "top_undervalued": [row for row in player_records if row["valuation_band"] == "Undervalued"][:15],
+        "top_overvalued": [row for row in value_df.sort_values(["salary_value_index", "performance_score"]).round(
+            {
+                "salary_cr": 2,
+                "fair_value_cr": 2,
+                "value_gap_cr": 2,
+                "salary_value_index": 1,
+                "valuation_score": 1,
+                "performance_score": 1,
+                "total_impact": 2,
+                "total_wins_added": 2,
+            }
+        ).to_dict("records") if row["valuation_band"] == "Overvalued"][:15],
+        "methodology": {
+            "summary": (
+                "Salary Value uses current 2026 player salaries from the salary sheet and compares them with a model-implied fair salary built from all IPL performance available "
+                "through the ball-by-ball archive. The model uses total impact score, wins-added proxy, IPL sample depth, phase ceiling, role, overseas status, and all-round value."
+            ),
+            "index": (
+                "Salary Value Index = 100 x Fair Salary / Current Salary. Scores above 100 indicate a player is cheaper than his model-implied fair value; "
+                "scores below 100 indicate he is expensive relative to performance."
+            ),
+            "gap": (
+                "Value Gap is measured in crores and equals Fair Salary minus Current Salary. Positive gaps indicate undervaluation; negative gaps indicate overvaluation."
+            ),
+        },
+    }
+
+
 def build_story_payload() -> dict:
     return {
         "hero_title": "IPL Auction Intelligence League Hub",
@@ -3066,6 +3288,7 @@ def main() -> None:
         "scenario": build_scenario_payload(),
         "matchups": build_matchup_payload(),
         "batter_diagnostics": build_batter_diagnostics_payload(players_payload),
+        "salary_value": build_salary_value_payload(players_payload),
         "match_planning": build_match_planning_payload(players_payload),
         "story": build_story_payload(),
     }

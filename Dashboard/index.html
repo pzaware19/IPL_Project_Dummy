@@ -1,19 +1,19 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IPL Auction Intelligence Hub</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=ipl-theme-20" />
   </head>
   <body>
     <div class="page-shell">
       <aside class="sidebar">
         <div class="brand-block">
           <p class="eyebrow">Sports Analytics + BI</p>
-          <h1>IPL Auction Intelligence Hub</h1>
+          <h1>IPL Auction Intelligence League Hub</h1>
           <p class="brand-copy">
-            Decision support for phase specialists, auction scarcity, and Rajasthan Royals'
+            Decision support for phase specialists, league-wide auction scarcity, and team-specific
             sequential bidding strategy.
           </p>
         </div>
@@ -21,6 +21,7 @@
         <nav class="nav-links">
           <a href="#overview">Overview</a>
           <a href="#phase-studio">Phase Studio</a>
+          <a href="#player-lab">Player Lab</a>
           <a href="#auction-lab">Auction Lab</a>
           <a href="#team-map">Team Map</a>
         </nav>
@@ -35,8 +36,32 @@
             <h2 id="hero-title"></h2>
             <p class="hero-subtitle" id="hero-subtitle"></p>
             <div class="hero-actions">
+              <a class="action-button" href="./scenario_builder.html" target="_blank" rel="noopener noreferrer">
+                Open Scenario Builder
+              </a>
+              <a class="action-button" href="./matchup_intelligence.html" target="_blank" rel="noopener noreferrer">
+                Open Matchup Intelligence
+              </a>
+              <a class="action-button" href="./market_inefficiency.html" target="_blank" rel="noopener noreferrer">
+                Open Market Inefficiency
+              </a>
+              <a class="action-button" href="./similarity_search.html" target="_blank" rel="noopener noreferrer">
+                Open Similarity Search
+              </a>
+              <a class="action-button" href="./auction_war_room.html" target="_blank" rel="noopener noreferrer">
+                Open Auction War Room
+              </a>
+              <a class="action-button" href="./draft_board.html" target="_blank" rel="noopener noreferrer">
+                Open Draft Board
+              </a>
+              <a class="action-button" href="./match_planning.html" target="_blank" rel="noopener noreferrer">
+                Open IPL 2026 Match-by-Match Planning
+              </a>
               <a class="action-button" href="./batter_diagnostics.html" target="_blank" rel="noopener noreferrer">
                 Open Batter Diagnostics
+              </a>
+              <a class="action-button" href="./salary_value_lab.html" target="_blank" rel="noopener noreferrer">
+                Open Salary Value Lab
               </a>
             </div>
           </div>
@@ -67,11 +92,21 @@
                 Phase
                 <select id="phase-phase"></select>
               </label>
+              <label>
+                Search Player
+                <input id="phase-player-search" list="phase-player-options" placeholder="Start typing a player name" />
+                <datalist id="phase-player-options"></datalist>
+              </label>
+              <label>
+                Compare Player
+                <input id="phase-player-compare" list="phase-player-options" placeholder="Optional comparison player" />
+              </label>
             </div>
           </div>
           <div class="phase-layout">
             <div class="chart-panel">
               <h4>Impact Leaderboard</h4>
+              <div id="phase-matchup" class="compare-grid"></div>
               <div id="phase-bars" class="bar-chart"></div>
             </div>
             <div class="table-panel">
@@ -83,28 +118,95 @@
           </div>
         </section>
 
+        <section class="panel" id="player-lab">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Player Lab</p>
+              <h3>Skill Radar, Impact Scores, and Wins Added</h3>
+            </div>
+            <div class="control-row">
+              <label>
+                Horizon
+                <select id="player-horizon"></select>
+              </label>
+              <label>
+                Profile Type
+                <select id="player-type"></select>
+              </label>
+              <label>
+                Search Player
+                <input id="player-search" list="player-options" placeholder="Start typing a player name" />
+                <datalist id="player-options"></datalist>
+              </label>
+              <label>
+                Compare Player
+                <input id="player-compare-search" list="player-options" placeholder="Optional comparison player" />
+              </label>
+            </div>
+          </div>
+
+          <div class="player-grid">
+            <div class="tile">
+              <div class="tile-header">
+                <h4>Skill Radar</h4>
+                <span class="pill">Searchable player selector</span>
+              </div>
+              <div class="radar-shell">
+                <svg id="player-radar" viewBox="0 0 420 360"></svg>
+              </div>
+              <div id="player-summary" class="compare-grid"></div>
+            </div>
+
+            <div class="tile">
+              <h4>Methodology</h4>
+              <div id="player-methodology" class="methodology-stack"></div>
+            </div>
+          </div>
+
+          <div class="player-grid lower">
+            <div class="tile">
+              <h4>Wins Added / WPA Proxy</h4>
+              <div id="wpa-cards" class="metric-stack"></div>
+            </div>
+            <div class="tile">
+              <h4>Player Comps</h4>
+              <div id="player-comps" class="metric-stack"></div>
+            </div>
+            <div class="tile">
+              <h4>Trajectory & Form</h4>
+              <div id="player-trajectory" class="metric-stack"></div>
+            </div>
+          </div>
+        </section>
+
         <section class="panel" id="auction-lab">
           <div class="panel-header">
             <div>
               <p class="eyebrow">Auction Lab</p>
-              <h3>Rajasthan Royals Auction Strategy</h3>
+              <h3>League-Wide Auction Strategy</h3>
             </div>
-            <div class="pill-row">
-              <span class="pill">Single seeded path</span>
-              <span class="pill accent">500 Monte Carlo runs</span>
+            <div class="control-row">
+              <label>
+                Franchise
+                <select id="auction-team-select"></select>
+              </label>
+              <div class="pill-row">
+                <span class="pill">Single seeded path</span>
+                <span class="pill accent">500 Monte Carlo runs</span>
+              </div>
             </div>
           </div>
 
           <div class="auction-grid">
             <div class="tile">
-              <h4>Representative RR Buys</h4>
+              <h4>Representative Buys in Shared League Path</h4>
               <div class="table-wrap compact">
                 <table id="rr-buys-table"></table>
               </div>
             </div>
 
             <div class="tile">
-              <h4>Core Target Stability</h4>
+              <h4>Top Monte Carlo Targets</h4>
               <div id="mc-target-cards" class="metric-stack"></div>
             </div>
           </div>
@@ -112,7 +214,7 @@
           <div class="auction-grid lower">
             <div class="tile wide">
               <div class="tile-header">
-                <h4>Featured Auction Events</h4>
+                <h4>Featured Events from Shared League Path</h4>
                 <div class="control-row dense">
                   <label>
                     Role
@@ -132,6 +234,29 @@
             <div class="tile">
               <h4>Monte Carlo Spend Profile</h4>
               <div id="spend-bars" class="bar-chart compact-bars"></div>
+            </div>
+          </div>
+
+          <div class="auction-grid lower">
+            <div class="tile wide">
+              <div class="tile-header">
+                <h4>Replacement Value Board</h4>
+                <div class="control-row dense">
+                  <label>
+                    Role
+                    <select id="role-market-select"></select>
+                  </label>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table id="role-market-table"></table>
+              </div>
+            </div>
+
+            <div class="tile">
+              <h4>Role Drop-Off Curve</h4>
+              <div id="role-dropoff-bars" class="bar-chart compact-bars"></div>
+              <div id="role-market-note" class="muted"></div>
             </div>
           </div>
         </section>
@@ -173,12 +298,35 @@
                 <div id="retained-player-list" class="retained-list"></div>
               </div>
             </div>
+            <div class="team-architecture-grid">
+              <div class="mini-block">
+                <h5>Retained XI Skeleton</h5>
+                <div id="team-xi-skeleton" class="architecture-list"></div>
+              </div>
+              <div class="mini-block">
+                <h5>Bench Depth</h5>
+                <div id="team-bench-depth" class="architecture-list"></div>
+              </div>
+              <div class="mini-block">
+                <h5>Recommended Auction Fills</h5>
+                <div id="team-recommended-fills" class="architecture-list"></div>
+              </div>
+              <div class="mini-block">
+                <h5>Overseas Slot Pressure</h5>
+                <div id="team-overseas-pressure" class="metric-stack"></div>
+              </div>
+            </div>
+            <div class="dashboard-credit">
+              <span class="dashboard-credit-label">Created By</span>
+              <strong>Piyush Zaware</strong>
+              <span class="dashboard-credit-copy">Economic modeling, auction simulation, and cricket analytics design.</span>
+            </div>
           </div>
         </section>
       </main>
     </div>
 
-    <script src="./data/dashboard_data.js"></script>
-    <script src="./app.js"></script>
+    <script src="./data/dashboard_data.js?v=ipl-theme-20"></script>
+    <script src="./app.js?v=ipl-theme-20"></script>
   </body>
 </html>

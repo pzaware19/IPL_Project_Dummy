@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IPL Salary Value Lab</title>
+    <link rel="stylesheet" href="./styles.css?v=ipl-theme-value-1" />
+  </head>
+  <body>
+    <main class="replay-shell">
+      <section class="replay-header">
+        <div>
+          <p class="eyebrow">Valuation Lab</p>
+          <h1>IPL Salary Value Lab</h1>
+          <p>
+            Compare each active player’s current 2026 salary with a model-implied fair salary built from total IPL performance, phase impact, wins added, and sample depth.
+          </p>
+          <div class="hero-actions">
+            <a class="action-button" href="./index.html" rel="noopener noreferrer">Back To Main Dashboard</a>
+          </div>
+        </div>
+        <div class="replay-badge">
+          <span>Price vs Performance</span>
+          <strong>Fair Value + Gap + Index</strong>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Controls</p>
+            <h3>Filter Salary Value</h3>
+          </div>
+          <div class="control-row">
+            <label>
+              Team
+              <select id="value-team-filter"></select>
+            </label>
+            <label>
+              Valuation
+              <select id="value-band-filter"></select>
+            </label>
+            <label>
+              Search Player
+              <input id="value-player-search" list="value-player-options" placeholder="Search player" />
+              <datalist id="value-player-options"></datalist>
+            </label>
+          </div>
+        </div>
+        <div id="value-headline-cards" class="replay-card-grid"></div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Selected Player Valuation</h4>
+            <div id="value-player-card" class="insight-stack"></div>
+          </div>
+          <div class="tile">
+            <h4>Team Value Summary</h4>
+            <div class="table-wrap compact">
+              <table id="value-team-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Most Undervalued</h4>
+            <div class="table-wrap compact">
+              <table id="value-undervalued-table"></table>
+            </div>
+          </div>
+          <div class="tile">
+            <h4>Most Overvalued</h4>
+            <div class="table-wrap compact">
+              <table id="value-overvalued-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tile">
+          <h4>Full Player Board</h4>
+          <div class="table-wrap">
+            <table id="value-player-table"></table>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tile">
+          <h4>Method Note</h4>
+          <div id="value-methodology" class="methodology-stack"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./data/dashboard_data.js?v=ipl-theme-value-1"></script>
+    <script src="./salary_value_lab.js?v=ipl-theme-value-1"></script>
+  </body>
+</html>
