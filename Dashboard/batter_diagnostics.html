@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IPL Batter Diagnostics</title>
+    <link rel="stylesheet" href="./styles.css?v=ipl-theme-batter-1" />
+  </head>
+  <body>
+    <main class="replay-shell">
+      <section class="replay-header">
+        <div>
+          <p class="eyebrow">Batter Scouting</p>
+          <h1>Ball-By-Ball Batter Diagnostics</h1>
+          <p>
+            Explore a batter’s strongest and weakest conditions by phase, pressure, venue, bowling family,
+            named bowlers, and dismissal modes using the IPL ball-by-ball archive.
+          </p>
+          <div class="hero-actions">
+            <a class="action-button" href="./index.html" rel="noopener noreferrer">Back To Main Dashboard</a>
+          </div>
+        </div>
+        <div class="replay-badge">
+          <span>Condition Scouting</span>
+          <strong>Phase + Pressure + Venue</strong>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Controls</p>
+            <h3>Select Batter</h3>
+          </div>
+          <div class="control-row">
+            <label>
+              Horizon
+              <select id="batter-horizon"></select>
+            </label>
+            <label>
+              Batter
+              <input id="batter-search" list="batter-options" placeholder="Search batter" />
+              <datalist id="batter-options"></datalist>
+            </label>
+          </div>
+        </div>
+        <div id="batter-headline" class="replay-card-grid"></div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Scouting Call</h4>
+            <div id="batter-scouting-call" class="insight-stack"></div>
+          </div>
+          <div class="tile">
+            <h4>Style Context</h4>
+            <div id="batter-style-context" class="compare-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Phase Profile</h4>
+            <div id="batter-phase-cards" class="compare-grid"></div>
+          </div>
+          <div class="tile">
+            <h4>Pressure Response</h4>
+            <div id="batter-pressure-cards" class="compare-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Venue Split</h4>
+            <div class="table-wrap compact">
+              <table id="batter-venue-table"></table>
+            </div>
+          </div>
+          <div class="tile">
+            <h4>Venue Pressure Split</h4>
+            <div class="table-wrap compact">
+              <table id="batter-venue-pressure-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Against Pace / Spin</h4>
+            <div id="batter-family-cards" class="compare-grid"></div>
+          </div>
+          <div class="tile">
+            <h4>Dismissal Modes</h4>
+            <div class="table-wrap compact">
+              <table id="batter-dismissal-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tool-grid">
+          <div class="tile">
+            <h4>Named Bowlers to Target</h4>
+            <div class="table-wrap compact">
+              <table id="batter-target-table"></table>
+            </div>
+          </div>
+          <div class="tile">
+            <h4>Named Bowlers to Respect</h4>
+            <div class="table-wrap compact">
+              <table id="batter-trouble-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-panel">
+        <div class="tile">
+          <h4>Method Note</h4>
+          <div id="batter-methodology" class="methodology-stack"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./data/dashboard_data.js?v=ipl-theme-batter-1"></script>
+    <script src="./batter_diagnostics.js?v=ipl-theme-batter-1"></script>
+  </body>
+</html>

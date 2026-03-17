@@ -2807,6 +2807,229 @@ def build_match_planning_payload(players_payload: dict) -> dict:
     }
 
 
+def build_batter_diagnostics_payload(players_payload: dict) -> dict:
+    ball = pd.read_csv(
+        DATA_DIR / "ipl_ball_by_ball.csv",
+        parse_dates=["date"],
+        usecols=[
+            "date",
+            "match_id",
+            "venue",
+            "city",
+            "batter",
+            "bowler",
+            "runs_batter",
+            "legal_ball",
+            "wicket",
+            "dismissal_kind",
+            "player_out",
+            "phase",
+            "balls_remaining",
+            "innings_wickets_cum",
+        ],
+    )
+    player_style_lookup = build_dashboard_player_style_lookup()
+    ball["batter_name"] = ball["batter"].map(canonical_player_name)
+    ball["bowler_name"] = ball["bowler"].map(canonical_player_name)
+    ball["bowler_norm"] = ball["bowler"].map(normalize_name)
+    ball["bowler_style"] = ball["bowler_norm"].map(
+        lambda key: player_style_lookup.get(key, {}).get("bowl_style", "")
+    ).replace({"": None})
+    ball["bowl_family"] = ball["bowler_style"].map(bowl_family_from_style)
+    ball["pressure_state"] = (
+        (ball["balls_remaining"] <= 30) | (ball["innings_wickets_cum"] >= 5)
+    ).map({True: "High Pressure", False: "Standard"})
+    ball["location_key"] = (
+        ball["city"]
+        .fillna(ball["venue"])
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map(lambda value: CITY_ALIASES.get(value, value))
+    )
+    ball["venue_label"] = (
+        ball["city"].fillna(ball["venue"]).astype(str).str.strip().replace({"": "Unknown Venue"})
+    )
+
+    batter_profiles = players_payload["batter_profiles"]
+    batter_options = sorted(batter_profiles.keys())
+    active_batter_options = sorted(
+        [
+            player
+            for player, profile in batter_profiles.items()
+            if int(profile["summary"].get("last_year", 0)) >= ACTIVE_CUTOFF_YEAR
+        ]
+    )
+
+    venue_label_lookup = (
+        ball.groupby(["location_key", "venue_label"])
+        .size()
+        .reset_index(name="count")
+        .sort_values(["location_key", "count"], ascending=[True, False])
+        .drop_duplicates("location_key")
+        .set_index("location_key")["venue_label"]
+        .to_dict()
+    )
+
+    phase_splits = (
+        ball.groupby(["batter_name", "phase"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+            matches=("match_id", "nunique"),
+        )
+        .reset_index()
+    )
+    phase_splits = phase_splits[phase_splits["balls"] >= 12].copy()
+    phase_splits["strike_rate"] = phase_splits["runs"] / phase_splits["balls"].clip(lower=1) * 100.0
+    phase_splits["dismissal_rate"] = phase_splits["dismissals"] / phase_splits["balls"].clip(lower=1)
+    phase_impact_lookup = {
+        (player, phase): float(details.get("impact_score", 0.0))
+        for player, profile in batter_profiles.items()
+        for phase, details in profile.get("phase_details", {}).items()
+    }
+    phase_splits["impact_score"] = phase_splits.apply(
+        lambda row: round(phase_impact_lookup.get((row["batter_name"], row["phase"]), 0.0), 2), axis=1
+    )
+
+    pressure_splits = (
+        ball.groupby(["batter_name", "pressure_state"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+            matches=("match_id", "nunique"),
+        )
+        .reset_index()
+    )
+    pressure_splits = pressure_splits[pressure_splits["balls"] >= 12].copy()
+    pressure_splits["strike_rate"] = pressure_splits["runs"] / pressure_splits["balls"].clip(lower=1) * 100.0
+    pressure_splits["dismissal_rate"] = pressure_splits["dismissals"] / pressure_splits["balls"].clip(lower=1)
+
+    venue_splits = (
+        ball.groupby(["batter_name", "location_key"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+            matches=("match_id", "nunique"),
+        )
+        .reset_index()
+    )
+    venue_splits = venue_splits[venue_splits["balls"] >= 15].copy()
+    venue_splits["venue"] = venue_splits["location_key"].map(lambda key: venue_label_lookup.get(key, key.title()))
+    venue_splits["strike_rate"] = venue_splits["runs"] / venue_splits["balls"].clip(lower=1) * 100.0
+    venue_splits["dismissal_rate"] = venue_splits["dismissals"] / venue_splits["balls"].clip(lower=1)
+
+    venue_pressure_splits = (
+        ball[ball["pressure_state"] == "High Pressure"]
+        .groupby(["batter_name", "location_key"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+            matches=("match_id", "nunique"),
+        )
+        .reset_index()
+    )
+    venue_pressure_splits = venue_pressure_splits[venue_pressure_splits["balls"] >= 8].copy()
+    venue_pressure_splits["venue"] = venue_pressure_splits["location_key"].map(
+        lambda key: venue_label_lookup.get(key, key.title())
+    )
+    venue_pressure_splits["strike_rate"] = (
+        venue_pressure_splits["runs"] / venue_pressure_splits["balls"].clip(lower=1) * 100.0
+    )
+    venue_pressure_splits["dismissal_rate"] = (
+        venue_pressure_splits["dismissals"] / venue_pressure_splits["balls"].clip(lower=1)
+    )
+
+    family_splits = (
+        ball[ball["bowl_family"].notna()]
+        .groupby(["batter_name", "bowl_family"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+        )
+        .reset_index()
+    )
+    family_splits = family_splits[family_splits["balls"] >= 20].copy()
+    family_splits["strike_rate"] = family_splits["runs"] / family_splits["balls"].clip(lower=1) * 100.0
+    family_splits["dismissal_rate"] = family_splits["dismissals"] / family_splits["balls"].clip(lower=1)
+
+    bowler_matchups = (
+        ball.groupby(["batter_name", "bowler_name"])
+        .agg(
+            runs=("runs_batter", "sum"),
+            balls=("legal_ball", "sum"),
+            dismissals=("wicket", lambda values: int(values.sum())),
+            matches=("match_id", "nunique"),
+        )
+        .reset_index()
+    )
+    bowler_matchups = bowler_matchups[bowler_matchups["balls"] >= 8].copy()
+    bowler_matchups["strike_rate"] = bowler_matchups["runs"] / bowler_matchups["balls"].clip(lower=1) * 100.0
+    bowler_matchups["dismissal_rate"] = bowler_matchups["dismissals"] / bowler_matchups["balls"].clip(lower=1)
+    bowler_matchups["attack_score"] = (
+        bowler_matchups["strike_rate"] - bowler_matchups["dismissal_rate"] * 140.0 + bowler_matchups["runs"] * 0.15
+    )
+    bowler_matchups["risk_score"] = (
+        bowler_matchups["dismissal_rate"] * 160.0 - bowler_matchups["strike_rate"] * 0.25
+    )
+
+    dismissal_modes = (
+        ball[(ball["player_out"] == ball["batter"]) & (ball["dismissal_kind"].notna())]
+        .groupby(["batter_name", "dismissal_kind"])
+        .agg(count=("dismissal_kind", "size"))
+        .reset_index()
+    )
+    dismissal_totals = dismissal_modes.groupby("batter_name")["count"].sum().to_dict()
+    dismissal_modes["share"] = dismissal_modes.apply(
+        lambda row: row["count"] / max(int(dismissal_totals.get(row["batter_name"], 1)), 1),
+        axis=1,
+    )
+
+    summaries = {}
+    for player, profile in batter_profiles.items():
+        summary = profile.get("summary", {})
+        summaries[player] = {
+            "player": player,
+            "runs": int(summary.get("runs", 0)),
+            "balls": int(summary.get("balls", 0)),
+            "matches": int(summary.get("matches", 0)),
+            "strike_rate": round(float(summary.get("strike_rate", 0.0)), 2),
+            "wins_added": round(float(summary.get("wins_added", 0.0)), 2),
+            "impact_score": round(float(summary.get("impact_score", 0.0)), 2),
+            "last_year": int(summary.get("last_year", 0)),
+            "active": int(summary.get("last_year", 0)) >= ACTIVE_CUTOFF_YEAR,
+            "style": profile.get("style", {}),
+        }
+
+    return {
+        "batter_options": batter_options,
+        "active_batter_options": active_batter_options,
+        "summaries": summaries,
+        "phase_splits": phase_splits.to_dict("records"),
+        "pressure_splits": pressure_splits.to_dict("records"),
+        "venue_splits": venue_splits.to_dict("records"),
+        "venue_pressure_splits": venue_pressure_splits.to_dict("records"),
+        "family_splits": family_splits.to_dict("records"),
+        "bowler_matchups": bowler_matchups.to_dict("records"),
+        "dismissal_modes": dismissal_modes.sort_values(["batter_name", "count"], ascending=[True, False]).to_dict("records"),
+        "methodology": {
+            "summary": (
+                "Batter Diagnostics is the maximum scouting layer available from the current Cricsheet-style IPL ball-by-ball sample. "
+                "It identifies where a batter scores best by phase, pressure state, venue, bowling family, named bowlers, and dismissal mode."
+            ),
+            "limitations": (
+                "This dataset does not contain Hawkeye-style attributes such as line, length, swing, seam movement, or shot coordinates. "
+                "So the module shows condition-based strengths and weaknesses rather than exact pitch-map or wagon-wheel zones."
+            ),
+        },
+    }
+
+
 def build_story_payload() -> dict:
     return {
         "hero_title": "IPL Auction Intelligence League Hub",
@@ -2842,6 +3065,7 @@ def main() -> None:
         "players": players_payload,
         "scenario": build_scenario_payload(),
         "matchups": build_matchup_payload(),
+        "batter_diagnostics": build_batter_diagnostics_payload(players_payload),
         "match_planning": build_match_planning_payload(players_payload),
         "story": build_story_payload(),
     }
