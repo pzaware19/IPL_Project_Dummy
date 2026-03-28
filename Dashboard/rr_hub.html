@@ -730,11 +730,11 @@
         </p>
       </div>
 
-      <!-- Next Match Card -->
+      <!-- Next Match Card — populated dynamically by JS -->
       <div class="next-match-card">
         <div class="next-match-label">
           <span class="live-dot"></span>
-          Next Match · Match 3
+          <span id="nm-label">Next Match</span>
         </div>
         <div class="match-teams">
           <div class="match-team">
@@ -743,27 +743,37 @@
           </div>
           <div class="vs-separator">VS</div>
           <div class="match-team">
-            <div class="team-code opp">CSK</div>
-            <div class="team-name">Chennai Super Kings</div>
+            <div class="team-code opp" id="nm-opp-code">—</div>
+            <div class="team-name" id="nm-opp-name">Loading…</div>
           </div>
         </div>
         <div class="match-meta">
           <div class="match-meta-row">
             <span class="icon">📅</span>
-            <span><strong>Sunday, March 30, 2026</strong></span>
+            <span id="nm-date"><strong>—</strong></span>
           </div>
           <div class="match-meta-row">
             <span class="icon">🏟</span>
-            <span>Barsapara Stadium · <strong>Guwahati</strong></span>
+            <span id="nm-venue">—</span>
           </div>
           <div class="match-meta-row">
             <span class="icon">🕖</span>
-            <span><strong>7:30 PM IST</strong></span>
+            <span id="nm-time"><strong>—</strong></span>
           </div>
         </div>
-        <a class="match-cta" href="./match_planning.html?team=RR" target="_blank" rel="noopener noreferrer">
+        <a class="match-cta" id="nm-cta" href="./match_planning.html?team=RR" target="_blank" rel="noopener noreferrer">
           Open Match Intelligence Brief →
         </a>
+
+        <!-- AI Brief -->
+        <button id="ai-brief-btn" style="
+          margin-top:12px; width:100%; padding:12px; border-radius:12px;
+          background:rgba(232,23,93,0.08); border:1px solid rgba(232,23,93,0.3);
+          color:#FF4B82; font-weight:700; font-size:0.82rem; cursor:pointer;
+          letter-spacing:0.04em; transition:all 0.2s; font-family:inherit;
+        ">✦ Generate AI Match Brief</button>
+
+        <div id="ai-brief-result" style="display:none; margin-top:14px;"></div>
       </div>
     </section>
 
@@ -1110,6 +1120,130 @@
         model-implied estimates, not formal contract assessments.
       </div>
     </footer>
+
+  <script src="./data/dashboard_data.js?v=rr-demo-1"></script>
+  <script>
+  (function () {
+    const TEAM_NAMES = {
+      RR:"Rajasthan Royals", CSK:"Chennai Super Kings", MI:"Mumbai Indians",
+      KKR:"Kolkata Knight Riders", RCB:"Royal Challengers Bengaluru",
+      SRH:"Sunrisers Hyderabad", GT:"Gujarat Titans", PBKS:"Punjab Kings",
+      DC:"Delhi Capitals", LSG:"Lucknow Super Giants",
+    };
+
+    // ── Dynamic next-match card ───────────────────────────────────
+    function populateNextMatch() {
+      const matches = (window.DASHBOARD_DATA?.match_planning?.matches) || [];
+      const today   = new Date().toISOString().slice(0, 10);
+      const rrMatches = matches.filter(m => m.home === "RR" || m.away === "RR");
+      const next    = rrMatches.find(m => m.date >= today) || rrMatches[rrMatches.length - 1];
+      if (!next) return;
+
+      const opp   = next.home === "RR" ? next.away : next.home;
+      const idx   = rrMatches.indexOf(next) + 1;
+
+      // date display
+      const d = new Date(next.date + "T00:00:00");
+      const dateStr = d.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+      document.getElementById("nm-label").textContent   = `Next Match · RR Fixture ${idx}`;
+      document.getElementById("nm-opp-code").textContent = opp;
+      document.getElementById("nm-opp-name").textContent = TEAM_NAMES[opp] || opp;
+      document.getElementById("nm-date").innerHTML       = `<strong>${dateStr}</strong>`;
+      document.getElementById("nm-venue").innerHTML      = `${next.venue} · <strong>${next.venue}</strong>`;
+      document.getElementById("nm-time").innerHTML       = `<strong>${next.start} IST</strong>`;
+
+      // store for AI brief
+      window._rrNextMatch = next;
+    }
+
+    // ── AI Match Brief ────────────────────────────────────────────
+    const btn    = document.getElementById("ai-brief-btn");
+    const result = document.getElementById("ai-brief-result");
+
+    function briefSection(title, content, color) {
+      if (!content || (Array.isArray(content) && !content.length)) return "";
+      const body = Array.isArray(content)
+        ? `<ul style="margin:6px 0 0 14px;padding:0;">${content.map(s=>`<li style="margin-bottom:4px;">${s}</li>`).join("")}</ul>`
+        : `<p style="margin:6px 0 0;line-height:1.55;">${content}</p>`;
+      return `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:${color};margin-bottom:2px;">${title}</div>
+          ${body}
+        </div>`;
+    }
+
+    function renderBrief(brief) {
+      result.style.display = "block";
+      result.innerHTML = `
+        <div style="
+          background:rgba(6,8,26,0.7); border:1px solid rgba(232,23,93,0.25);
+          border-radius:14px; padding:18px; font-size:0.82rem;
+          color:#EEF2FF; line-height:1.5;
+          border-top: 3px solid #E8175D;
+        ">
+          <div style="font-size:1rem;font-weight:800;color:#EEF2FF;margin-bottom:4px;">${brief.headline || "AI Match Brief"}</div>
+          <div style="font-size:0.82rem;color:#FF4B82;margin-bottom:14px;font-style:italic;">${brief.opening_call || ""}</div>
+          ${briefSection("Why This Matchup Is Live", brief.why_this_matchup_is_live, "#F7C948")}
+          ${briefSection("Tactical Edges", brief.tactical_edges, "#34D399")}
+          ${briefSection("Matchup Watch", brief.matchup_watch, "#60A5FA")}
+          ${briefSection("Venue Read", brief.venue_read, "#F7C948")}
+          ${briefSection("Recommended Plan", brief.recommended_plan, "#34D399")}
+          ${briefSection("Risk Flags", brief.risk_flags, "#F87171")}
+          <div style="margin-top:12px;font-size:0.65rem;color:#7B8DB8;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
+            Generated by Claude · Based on ball-by-ball IPL data through 2025 · Not a substitute for live scout reports
+          </div>
+        </div>`;
+    }
+
+    btn.addEventListener("click", async function () {
+      const match = window._rrNextMatch;
+      if (!match) { result.style.display="block"; result.innerHTML="<p style='color:#F87171'>No match data loaded.</p>"; return; }
+
+      btn.disabled = true;
+      btn.textContent = "Generating brief…";
+      result.style.display = "block";
+      result.innerHTML = `
+        <div style="text-align:center;padding:20px;color:#7B8DB8;font-size:0.82rem;">
+          <div style="font-size:1.4rem;margin-bottom:8px;animation:spin 1s linear infinite;display:inline-block;">◌</div><br>
+          Claude is reading the match data…
+        </div>`;
+
+      try {
+        const resp = await fetch("/api/match-brief", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ match_id: match.match_id, team_lens: "RR" }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: resp.statusText }));
+          throw new Error(err.error || resp.statusText);
+        }
+        const data = await resp.json();
+        renderBrief(data.brief);
+      } catch (err) {
+        result.innerHTML = `<div style="color:#F87171;font-size:0.82rem;padding:10px;background:rgba(248,113,113,0.08);border-radius:10px;border:1px solid rgba(248,113,113,0.2);">
+          <strong>Error:</strong> ${err.message}
+        </div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "✦ Regenerate AI Match Brief";
+      }
+    });
+
+    // Run on load
+    populateNextMatch();
+  })();
+  </script>
+
+  <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    #ai-brief-btn:hover:not(:disabled) {
+      background: rgba(232,23,93,0.15) !important;
+      box-shadow: 0 0 14px rgba(232,23,93,0.2);
+    }
+    #ai-brief-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
 
   </body>
 </html>

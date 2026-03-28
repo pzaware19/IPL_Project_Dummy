@@ -158,10 +158,10 @@ def build_scenario_response(payload: dict) -> dict:
 def build_match_brief_response(payload: dict) -> dict:
     match_id = int(payload.get("match_id") or 0)
     team_lens = str(payload.get("team_lens") or "").upper()
-    model = str(payload.get("model") or os.environ.get("OPENAI_MODEL") or "gpt-4.1-mini")
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    model = str(payload.get("model") or os.environ.get("CLAUDE_MODEL") or "claude-sonnet-4-6")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
-        raise ValueError("OPENAI_API_KEY is not configured on the server")
+        raise ValueError("ANTHROPIC_API_KEY is not configured on the server")
 
     dashboard_payload = load_dashboard_payload()
     planning = dashboard_payload.get("match_planning", {})
@@ -192,36 +192,34 @@ def build_match_brief_response(payload: dict) -> dict:
         "methodology": planning.get("methodology", {}),
     }
 
-    prompt = (
-        "You are a high-level IPL strategy analyst writing a match brief for a decision-support dashboard. "
+    system_prompt = (
+        "You are a high-level IPL strategy analyst writing a match brief for a front-office decision-support dashboard. "
         "Use only the provided structured data. Do not invent statistics, players, venue traits, or matchup claims not present in the context. "
         "Be specific, tactical, and cricket-literate. Prefer realistic role language such as opener, enforcer, anchor, death hitter, new-ball bowler, and middle-overs controller. "
-        "Return valid JSON with keys: headline, opening_call, why_this_matchup_is_live, tactical_edges, matchup_watch, venue_read, risk_flags, recommended_plan. "
-        "Each of tactical_edges, matchup_watch, risk_flags, recommended_plan must be an array of 2 to 4 concise strings."
+        "Return ONLY valid JSON with exactly these keys: headline, opening_call, why_this_matchup_is_live, tactical_edges, matchup_watch, venue_read, risk_flags, recommended_plan. "
+        "Each of tactical_edges, matchup_watch, risk_flags, recommended_plan must be an array of 2 to 4 concise strings. "
+        "No markdown, no explanation outside the JSON object."
+    )
+
+    user_content = (
+        "Write a fixture-specific match brief for the selected team lens using this context:\n"
+        + json.dumps(context, ensure_ascii=True)
     )
 
     body = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": prompt},
-            {
-                "role": "user",
-                "content": (
-                    "Write a fixture-specific match brief for the selected team lens using this context:\n"
-                    + json.dumps(context, ensure_ascii=True)
-                ),
-            },
-        ],
-        "response_format": {"type": "json_object"},
-        "temperature": 0.5,
+        "max_tokens": 1024,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_content}],
     }
 
     request = Request(
-        "https://api.openai.com/v1/chat/completions",
+        "https://api.anthropic.com/v1/messages",
         data=json.dumps(body).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
         },
         method="POST",
     )
@@ -230,11 +228,11 @@ def build_match_brief_response(payload: dict) -> dict:
             payload_raw = json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
-        raise ValueError(f"OpenAI API error: {exc.code} {detail}") from exc
+        raise ValueError(f"Claude API error: {exc.code} {detail}") from exc
     except URLError as exc:
-        raise ValueError(f"Unable to reach OpenAI API: {exc.reason}") from exc
+        raise ValueError(f"Unable to reach Claude API: {exc.reason}") from exc
 
-    content = payload_raw["choices"][0]["message"]["content"]
+    content = payload_raw["content"][0]["text"]
     try:
         brief = json.loads(content)
     except json.JSONDecodeError:
