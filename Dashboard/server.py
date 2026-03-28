@@ -208,7 +208,7 @@ def build_match_brief_response(payload: dict) -> dict:
 
     body = {
         "model": model,
-        "max_tokens": 1024,
+        "max_tokens": 2048,
         "system": system_prompt,
         "messages": [{"role": "user", "content": user_content}],
     }
@@ -232,7 +232,11 @@ def build_match_brief_response(payload: dict) -> dict:
     except URLError as exc:
         raise ValueError(f"Unable to reach Claude API: {exc.reason}") from exc
 
-    content = payload_raw["content"][0]["text"]
+    content = payload_raw["content"][0]["text"].strip()
+    # Strip markdown code fences if present
+    if content.startswith("```"):
+        content = content.split("\n", 1)[-1]
+        content = content.rsplit("```", 1)[0].strip()
     try:
         brief = json.loads(content)
     except json.JSONDecodeError:
