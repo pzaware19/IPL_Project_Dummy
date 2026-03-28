@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rajasthan Royals — Decision Intelligence Platform</title>
+    <style>
+      /* ── RR Brand Tokens ─────────────────────────────────────── */
+      :root {
+        --rr-pink:        #E8175D;
+        --rr-pink-light:  #FF4B82;
+        --rr-pink-dim:    rgba(232, 23, 93, 0.18);
+        --rr-pink-glow:   rgba(232, 23, 93, 0.35);
+        --rr-blue:        #14336B;
+        --rr-blue-mid:    #1E4D9B;
+        --rr-blue-light:  #2F6FE0;
+        --rr-gold:        #F7C948;
+        --rr-dark:        #06081A;
+        --rr-dark-2:      #0C1230;
+        --rr-card:        #111830;
+        --rr-card-hover:  #19254A;
+        --rr-text:        #EEF2FF;
+        --rr-muted:       #7B8DB8;
+        --rr-border:      rgba(232, 23, 93, 0.22);
+        --rr-border-blue: rgba(47, 111, 224, 0.28);
+        --rr-radius:      20px;
+        --rr-radius-sm:   12px;
+        --display: "Trebuchet MS", "Arial Narrow", "Avenir Next Condensed", sans-serif;
+        --ui: "Segoe UI", "Avenir Next", system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+
+      body {
+        font-family: var(--ui);
+        background: var(--rr-dark);
+        color: var(--rr-text);
+        min-height: 100vh;
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,23,93,0.12), transparent),
+          radial-gradient(ellipse 60% 40% at 80% 60%, rgba(30,77,155,0.15), transparent),
+          radial-gradient(ellipse 40% 30% at 10% 80%, rgba(232,23,93,0.07), transparent);
+      }
+
+      /* ── Top Nav ─────────────────────────────────────────────── */
+      .top-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        height: 64px;
+        background: rgba(6, 8, 26, 0.85);
+        border-bottom: 1px solid var(--rr-border);
+        backdrop-filter: blur(14px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .rr-monogram {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--rr-pink), #B5144A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--display);
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: white;
+        letter-spacing: -0.04em;
+        box-shadow: 0 0 18px var(--rr-pink-glow);
+      }
+
+      .nav-brand-text {
+        display: grid;
+        gap: 1px;
+      }
+
+      .nav-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--rr-text);
+        letter-spacing: 0.02em;
+      }
+
+      .nav-sub {
+        font-size: 0.68rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .nav-badge {
+        padding: 5px 14px;
+        border-radius: 999px;
+        background: var(--rr-pink-dim);
+        border: 1px solid var(--rr-border);
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--rr-pink-light);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .nav-season {
+        font-size: 0.78rem;
+        color: var(--rr-muted);
+        font-weight: 600;
+      }
+
+      /* ── Hero ────────────────────────────────────────────────── */
+      .hero {
+        padding: 60px 40px 48px;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 40px;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .hero-eyebrow {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        color: var(--rr-pink);
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+
+      .hero-title {
+        font-family: var(--display);
+        font-size: clamp(2.8rem, 5.5vw, 5rem);
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        line-height: 0.95;
+        color: var(--rr-text);
+        margin-bottom: 6px;
+      }
+
+      .hero-title span {
+        color: var(--rr-pink);
+      }
+
+      .hero-tagline {
+        font-size: 1.05rem;
+        color: var(--rr-muted);
+        margin-top: 16px;
+        line-height: 1.5;
+        max-width: 520px;
+      }
+
+      .hero-tagline strong {
+        color: var(--rr-gold);
+      }
+
+      /* ── Next Match Card ─────────────────────────────────────── */
+      .next-match-card {
+        background: linear-gradient(135deg, var(--rr-card), #0F1E3A);
+        border: 1px solid var(--rr-border);
+        border-radius: var(--rr-radius);
+        padding: 28px;
+        box-shadow: 0 0 40px rgba(232,23,93,0.12), 0 20px 60px rgba(0,0,0,0.5);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .next-match-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--rr-pink), var(--rr-blue-light));
+      }
+
+      .next-match-label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--rr-pink);
+        font-weight: 700;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--rr-pink);
+        animation: pulse 1.8s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--rr-pink-glow); }
+        50% { opacity: 0.7; box-shadow: 0 0 0 5px transparent; }
+      }
+
+      .match-teams {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 12px;
+      }
+
+      .match-team {
+        display: grid;
+        gap: 4px;
+        text-align: center;
+      }
+
+      .team-code {
+        font-family: var(--display);
+        font-size: 2.4rem;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 1;
+      }
+
+      .team-code.rr { color: var(--rr-pink); }
+      .team-code.opp { color: #FFD166; }
+
+      .team-name {
+        font-size: 0.68rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .vs-separator {
+        font-size: 0.78rem;
+        color: var(--rr-muted);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      .match-meta {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .match-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--rr-muted);
+      }
+
+      .match-meta-row .icon {
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+
+      .match-meta-row strong {
+        color: var(--rr-text);
+      }
+
+      .match-cta {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border-radius: var(--rr-radius-sm);
+        background: linear-gradient(135deg, var(--rr-pink), #B5144A);
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-align: center;
+        letter-spacing: 0.04em;
+        box-shadow: 0 4px 20px rgba(232,23,93,0.35);
+        transition: all 0.2s;
+      }
+
+      .match-cta:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 28px rgba(232,23,93,0.5);
+      }
+
+      /* ── Fixture Strip ───────────────────────────────────────── */
+      .fixture-strip-section {
+        padding: 0 40px 48px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .section-eyebrow {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--rr-pink);
+        font-weight: 700;
+      }
+
+      .section-title {
+        font-family: var(--display);
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--rr-text);
+        text-transform: uppercase;
+      }
+
+      .fixture-strip {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--rr-border) transparent;
+      }
+
+      .fixture-chip {
+        flex-shrink: 0;
+        background: var(--rr-card);
+        border: 1px solid var(--rr-border-blue);
+        border-radius: var(--rr-radius-sm);
+        padding: 12px 16px;
+        text-decoration: none;
+        color: var(--rr-text);
+        transition: all 0.18s;
+        min-width: 130px;
+        text-align: center;
+      }
+
+      .fixture-chip:hover {
+        background: var(--rr-card-hover);
+        border-color: var(--rr-border);
+        transform: translateY(-2px);
+      }
+
+      .fixture-chip.next {
+        border-color: var(--rr-pink);
+        background: linear-gradient(135deg, rgba(232,23,93,0.12), rgba(17,24,48,0.95));
+        box-shadow: 0 0 20px var(--rr-pink-dim);
+      }
+
+      .fixture-chip.played {
+        opacity: 0.45;
+      }
+
+      .chip-date {
+        font-size: 0.68rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 5px;
+      }
+
+      .chip-opp {
+        font-family: var(--display);
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--rr-text);
+        margin-bottom: 4px;
+      }
+
+      .chip-venue {
+        font-size: 0.66rem;
+        color: var(--rr-muted);
+      }
+
+      .chip-home-badge {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--rr-pink-dim);
+        color: var(--rr-pink-light);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      /* ── Module Grid ─────────────────────────────────────────── */
+      .modules-section {
+        padding: 0 40px 56px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .module-card {
+        background: var(--rr-card);
+        border: 1px solid var(--rr-border-blue);
+        border-radius: var(--rr-radius);
+        padding: 26px 24px;
+        text-decoration: none;
+        color: var(--rr-text);
+        transition: all 0.2s;
+        display: grid;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .module-card:hover {
+        background: var(--rr-card-hover);
+        border-color: var(--rr-border);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 20px var(--rr-pink-dim);
+      }
+
+      .module-card.primary {
+        border-color: var(--rr-border);
+        background: linear-gradient(135deg, rgba(232,23,93,0.1), rgba(17,24,48,0.98));
+      }
+
+      .module-card.primary:hover {
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 30px var(--rr-pink-glow);
+      }
+
+      .card-accent-bar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--rr-pink), transparent);
+      }
+
+      .module-card.secondary .card-accent-bar {
+        background: linear-gradient(90deg, var(--rr-blue-light), transparent);
+      }
+
+      .card-icon {
+        font-size: 1.6rem;
+        line-height: 1;
+      }
+
+      .card-badge {
+        display: inline-block;
+        font-size: 0.6rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        width: fit-content;
+      }
+
+      .badge-live {
+        background: rgba(232,23,93,0.2);
+        color: var(--rr-pink-light);
+        border: 1px solid var(--rr-border);
+      }
+
+      .badge-auction {
+        background: rgba(247,201,72,0.15);
+        color: var(--rr-gold);
+        border: 1px solid rgba(247,201,72,0.25);
+      }
+
+      .badge-scout {
+        background: rgba(47,111,224,0.15);
+        color: var(--rr-blue-light);
+        border: 1px solid var(--rr-border-blue);
+      }
+
+      .badge-intel {
+        background: rgba(16,185,129,0.12);
+        color: #34D399;
+        border: 1px solid rgba(16,185,129,0.2);
+      }
+
+      .card-title {
+        font-family: var(--display);
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        color: var(--rr-text);
+      }
+
+      .card-desc {
+        font-size: 0.8rem;
+        color: var(--rr-muted);
+        line-height: 1.5;
+      }
+
+      .card-arrow {
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: var(--rr-pink);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+
+      .module-card.secondary .card-arrow {
+        color: var(--rr-blue-light);
+      }
+
+      /* ── Squad Strip ─────────────────────────────────────────── */
+      .squad-section {
+        padding: 0 40px 56px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .squad-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .player-card {
+        background: var(--rr-card);
+        border: 1px solid var(--rr-border-blue);
+        border-radius: var(--rr-radius-sm);
+        padding: 18px 16px;
+        transition: all 0.18s;
+      }
+
+      .player-card:hover {
+        border-color: var(--rr-border);
+        background: var(--rr-card-hover);
+      }
+
+      .player-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--rr-text);
+        margin-bottom: 4px;
+      }
+
+      .player-role {
+        font-size: 0.7rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 10px;
+      }
+
+      .player-salary {
+        font-family: var(--display);
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--rr-gold);
+        letter-spacing: -0.02em;
+      }
+
+      .player-salary-label {
+        font-size: 0.65rem;
+        color: var(--rr-muted);
+        margin-top: 2px;
+      }
+
+      .player-flag {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 0.62rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(47,111,224,0.15);
+        color: var(--rr-blue-light);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .player-flag.overseas {
+        background: rgba(232,23,93,0.12);
+        color: var(--rr-pink-light);
+      }
+
+      .player-flag.captain {
+        background: rgba(247,201,72,0.15);
+        color: var(--rr-gold);
+      }
+
+      /* ── Stats Bar ───────────────────────────────────────────── */
+      .stats-bar {
+        padding: 28px 40px;
+        max-width: 1400px;
+        margin: 0 auto 40px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1px;
+        background: var(--rr-border);
+        border: 1px solid var(--rr-border);
+        border-radius: var(--rr-radius);
+        overflow: hidden;
+      }
+
+      .stat-cell {
+        background: var(--rr-card);
+        padding: 20px 24px;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-family: var(--display);
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--rr-pink);
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.68rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin-top: 5px;
+      }
+
+      /* ── Footer ──────────────────────────────────────────────── */
+      footer {
+        border-top: 1px solid var(--rr-border);
+        padding: 28px 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .footer-brand {
+        font-size: 0.8rem;
+        color: var(--rr-muted);
+      }
+
+      .footer-brand strong {
+        color: var(--rr-pink);
+      }
+
+      .footer-note {
+        font-size: 0.72rem;
+        color: var(--rr-muted);
+        max-width: 560px;
+        text-align: right;
+        line-height: 1.5;
+      }
+
+      /* ── Divider ─────────────────────────────────────────────── */
+      .section-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--rr-border), transparent);
+        max-width: 1400px;
+        margin: 0 auto 48px;
+      }
+
+      /* ── Responsive ──────────────────────────────────────────── */
+      @media (max-width: 1024px) {
+        .hero { grid-template-columns: 1fr; }
+        .next-match-card { max-width: 480px; }
+        .module-grid { grid-template-columns: repeat(2, 1fr); }
+        .squad-grid { grid-template-columns: repeat(2, 1fr); }
+        .stats-bar { grid-template-columns: repeat(3, 1fr); }
+      }
+
+      @media (max-width: 640px) {
+        .top-nav, .hero, .modules-section,
+        .squad-section, .fixture-strip-section { padding-left: 20px; padding-right: 20px; }
+        .module-grid { grid-template-columns: 1fr; }
+        .squad-grid { grid-template-columns: 1fr 1fr; }
+        .stats-bar { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <script>
+      // Auth guard — redirect to login if no session
+      if (sessionStorage.getItem("rr_demo_auth") !== "1") {
+        window.location.replace("./rr_login.html");
+      }
+    </script>
+
+    <!-- ── Nav ──────────────────────────────────────────────────── -->
+    <nav class="top-nav">
+      <div class="nav-brand">
+        <div class="rr-monogram">RR</div>
+        <div class="nav-brand-text">
+          <span class="nav-title">Rajasthan Royals</span>
+          <span class="nav-sub">Decision Intelligence Platform</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <span class="nav-badge">● Live Season</span>
+        <span class="nav-season">IPL 2026</span>
+      </div>
+    </nav>
+
+    <!-- ── Hero ─────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div>
+        <p class="hero-eyebrow">Front-Office Analytics</p>
+        <h1 class="hero-title">
+          Rajasthan<br><span>Royals</span>
+        </h1>
+        <p class="hero-tagline">
+          Ball-by-ball decision intelligence. Phase-based impact modeling,
+          matchup scouting, salary valuation, and match-by-match tactical planning —
+          built on <strong>every IPL delivery since 2017</strong>.
+        </p>
+      </div>
+
+      <!-- Next Match Card -->
+      <div class="next-match-card">
+        <div class="next-match-label">
+          <span class="live-dot"></span>
+          Next Match · Match 3
+        </div>
+        <div class="match-teams">
+          <div class="match-team">
+            <div class="team-code rr">RR</div>
+            <div class="team-name">Rajasthan Royals</div>
+          </div>
+          <div class="vs-separator">VS</div>
+          <div class="match-team">
+            <div class="team-code opp">CSK</div>
+            <div class="team-name">Chennai Super Kings</div>
+          </div>
+        </div>
+        <div class="match-meta">
+          <div class="match-meta-row">
+            <span class="icon">📅</span>
+            <span><strong>Sunday, March 30, 2026</strong></span>
+          </div>
+          <div class="match-meta-row">
+            <span class="icon">🏟</span>
+            <span>Barsapara Stadium · <strong>Guwahati</strong></span>
+          </div>
+          <div class="match-meta-row">
+            <span class="icon">🕖</span>
+            <span><strong>7:30 PM IST</strong></span>
+          </div>
+        </div>
+        <a class="match-cta" href="./match_planning.html?team=RR" target="_blank" rel="noopener noreferrer">
+          Open Match Intelligence Brief →
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Fixture Strip ────────────────────────────────────────── -->
+    <section class="fixture-strip-section">
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">IPL 2026 Season</p>
+          <h2 class="section-title">Full RR Schedule — 14 Matches</h2>
+        </div>
+      </div>
+      <div class="fixture-strip">
+        <a class="fixture-chip next" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Mar 30</div>
+          <div class="chip-opp">CSK</div>
+          <div class="chip-venue">Guwahati</div>
+          <span class="chip-home-badge">Home Alt</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 4</div>
+          <div class="chip-opp">GT</div>
+          <div class="chip-venue">Ahmedabad</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 7</div>
+          <div class="chip-opp">MI</div>
+          <div class="chip-venue">Guwahati</div>
+          <span class="chip-home-badge">Home Alt</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 10</div>
+          <div class="chip-opp">RCB</div>
+          <div class="chip-venue">Guwahati</div>
+          <span class="chip-home-badge">Home Alt</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 13</div>
+          <div class="chip-opp">SRH</div>
+          <div class="chip-venue">Hyderabad</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 19</div>
+          <div class="chip-opp">KKR</div>
+          <div class="chip-venue">Kolkata</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 22</div>
+          <div class="chip-opp">LSG</div>
+          <div class="chip-venue">Lucknow</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 25</div>
+          <div class="chip-opp">SRH</div>
+          <div class="chip-venue">Jaipur</div>
+          <span class="chip-home-badge">Home</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">Apr 28</div>
+          <div class="chip-opp">PBKS</div>
+          <div class="chip-venue">Mullanpur</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">May 1</div>
+          <div class="chip-opp">DC</div>
+          <div class="chip-venue">Jaipur</div>
+          <span class="chip-home-badge">Home</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">May 9</div>
+          <div class="chip-opp">GT</div>
+          <div class="chip-venue">Jaipur</div>
+          <span class="chip-home-badge">Home</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">May 17</div>
+          <div class="chip-opp">DC</div>
+          <div class="chip-venue">Delhi</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">May 19</div>
+          <div class="chip-opp">LSG</div>
+          <div class="chip-venue">Jaipur</div>
+          <span class="chip-home-badge">Home</span>
+        </a>
+        <a class="fixture-chip" href="./match_planning.html?team=RR" target="_blank">
+          <div class="chip-date">May 24</div>
+          <div class="chip-opp">MI</div>
+          <div class="chip-venue">Mumbai</div>
+          <span class="chip-home-badge" style="background:rgba(120,120,120,0.15);color:var(--rr-muted);">Away</span>
+        </a>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ── Stats Bar ────────────────────────────────────────────── -->
+    <div class="stats-bar">
+      <div class="stat-cell">
+        <div class="stat-value">1,169</div>
+        <div class="stat-label">Matches Analyzed</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">350K+</div>
+        <div class="stat-label">Deliveries (Ball-by-Ball)</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Phases Modeled</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">500</div>
+        <div class="stat-label">Monte Carlo Auction Runs</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">₹15.8Cr</div>
+        <div class="stat-label">RR Analytics Budget (FY25)</div>
+      </div>
+    </div>
+
+    <!-- ── Modules ───────────────────────────────────────────────── -->
+    <section class="modules-section">
+      <div class="section-header" style="margin-bottom:24px;">
+        <div>
+          <p class="section-eyebrow">Intelligence Suite</p>
+          <h2 class="section-title">Decision Tools</h2>
+        </div>
+      </div>
+      <div class="module-grid">
+
+        <!-- Match Planning — PRIMARY -->
+        <a class="module-card primary" href="./match_planning.html?team=RR" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">🗺</div>
+          <span class="card-badge badge-live">● In-Season</span>
+          <div class="card-title">Match Planning</div>
+          <div class="card-desc">
+            Opponent-aware SWOT, phase-by-phase tactical brief, venue specialists,
+            and pressure-response ratings. Updated for each RR fixture.
+          </div>
+          <div class="card-arrow">Open Match Intelligence →</div>
+        </a>
+
+        <!-- Matchup Intelligence — PRIMARY -->
+        <a class="module-card primary" href="./matchup_intelligence.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">⚔</div>
+          <span class="card-badge badge-live">● Pre-Match</span>
+          <div class="card-title">Matchup Intelligence</div>
+          <div class="card-desc">
+            Batter vs bowler H2H with ball-by-ball evidence. Direct dismissal history
+            weighted against phase-level percentiles for RR's likely XI.
+          </div>
+          <div class="card-arrow">Open Matchup Tool →</div>
+        </a>
+
+        <!-- Salary Value Lab — PRIMARY -->
+        <a class="module-card primary" href="./salary_value_lab.html?team=RR" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">💰</div>
+          <span class="card-badge badge-auction">Valuation</span>
+          <div class="card-title">Salary Value Lab</div>
+          <div class="card-desc">
+            Fair salary vs 2026 contract. Salary Value Index and Value Gap (₹Cr)
+            for every RR player — Jaiswal, Archer, Jadeja, Hetmyer, and more.
+          </div>
+          <div class="card-arrow">Open Value Lab →</div>
+        </a>
+
+        <!-- Batter Diagnostics -->
+        <a class="module-card secondary" href="./batter_diagnostics.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">📊</div>
+          <span class="card-badge badge-scout">Scouting</span>
+          <div class="card-title">Batter Diagnostics</div>
+          <div class="card-desc">
+            Phase splits, pressure response, bowling-family vulnerability, venue record,
+            and dismissal mode breakdown for any active or historical batter.
+          </div>
+          <div class="card-arrow">Open Diagnostics →</div>
+        </a>
+
+        <!-- Auction War Room -->
+        <a class="module-card secondary" href="./auction_war_room.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">🏦</div>
+          <span class="card-badge badge-auction">Auction</span>
+          <div class="card-title">Auction War Room</div>
+          <div class="card-desc">
+            Shared-league simulation of IPL 2026. 500 Monte Carlo paths with
+            representative RR targets, bid caps, and role-specific spend profiles.
+          </div>
+          <div class="card-arrow">Open War Room →</div>
+        </a>
+
+        <!-- Phase Studio -->
+        <a class="module-card secondary" href="./index.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">📈</div>
+          <span class="card-badge badge-scout">Performance</span>
+          <div class="card-title">Phase Studio</div>
+          <div class="card-desc">
+            Powerplay, middle-overs, and death-overs impact leaderboards.
+            Bayesian-shrunk phase ratings for batters and bowlers, active and all-time.
+          </div>
+          <div class="card-arrow">Open Phase Studio →</div>
+        </a>
+
+        <!-- Scenario Builder -->
+        <a class="module-card secondary" href="./scenario_builder.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">🔬</div>
+          <span class="card-badge badge-intel">Strategy</span>
+          <div class="card-title">Scenario Builder</div>
+          <div class="card-desc">
+            Counterfactual auction modeling. Adjust RR's squad priorities and replay
+            the shared auction to see how the market shifts.
+          </div>
+          <div class="card-arrow">Open Scenario Builder →</div>
+        </a>
+
+        <!-- Market Inefficiency -->
+        <a class="module-card secondary" href="./market_inefficiency.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">🎯</div>
+          <span class="card-badge badge-auction">Market</span>
+          <div class="card-title">Market Inefficiency</div>
+          <div class="card-desc">
+            Identify systematically underpriced player archetypes in IPL 2026
+            auction outcomes. Role-based surplus and scarcity analysis.
+          </div>
+          <div class="card-arrow">Open Market View →</div>
+        </a>
+
+        <!-- Similarity Search -->
+        <a class="module-card secondary" href="./similarity_search.html" target="_blank" rel="noopener noreferrer">
+          <div class="card-accent-bar"></div>
+          <div class="card-icon">🔍</div>
+          <span class="card-badge badge-scout">Comps</span>
+          <div class="card-title">Similarity Search</div>
+          <div class="card-desc">
+            Find statistically similar players for any RR target. Phase-impact
+            fingerprinting to surface comparable profiles and replacement options.
+          </div>
+          <div class="card-arrow">Open Similarity Search →</div>
+        </a>
+
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ── Squad Section ────────────────────────────────────────── -->
+    <section class="squad-section">
+      <div class="section-header" style="margin-bottom:20px;">
+        <div>
+          <p class="section-eyebrow">2026 Retained + Acquired Squad</p>
+          <h2 class="section-title">RR Core Players</h2>
+        </div>
+      </div>
+      <div class="squad-grid">
+
+        <div class="player-card">
+          <div class="player-name">Yashaswi Jaiswal</div>
+          <div class="player-role">Opening Batter</div>
+          <div class="player-salary">₹18 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag">Domestic</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Riyan Parag</div>
+          <div class="player-role">Batter · Captain</div>
+          <div class="player-salary">₹14 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag captain">Captain</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Dhruv Jurel</div>
+          <div class="player-role">Wicket-Keeper / Batter</div>
+          <div class="player-salary">₹14 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag">Domestic</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Ravindra Jadeja</div>
+          <div class="player-role">All-Rounder</div>
+          <div class="player-salary">₹14 Cr</div>
+          <div class="player-salary-label">2026 Contract (Trade)</div>
+          <span class="player-flag">Domestic</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Jofra Archer</div>
+          <div class="player-role">Pace Bowler</div>
+          <div class="player-salary">₹12.5 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag overseas">Overseas</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Shimron Hetmyer</div>
+          <div class="player-role">Batter</div>
+          <div class="player-salary">₹11 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag overseas">Overseas</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Tushar Deshpande</div>
+          <div class="player-role">Pace Bowler</div>
+          <div class="player-salary">₹6.5 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag">Domestic</span>
+        </div>
+
+        <div class="player-card">
+          <div class="player-name">Vaibhav Suryavanshi</div>
+          <div class="player-role">Batter · Young Gun</div>
+          <div class="player-salary">₹1.1 Cr</div>
+          <div class="player-salary-label">2026 Contract</div>
+          <span class="player-flag">Domestic</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Footer ────────────────────────────────────────────────── -->
+    <footer>
+      <div class="footer-brand">
+        <strong>RR Decision Intelligence Platform</strong><br>
+        <span>Built on Cricsheet ball-by-ball data · IPL 2017–2025</span>
+      </div>
+      <div class="footer-note">
+        Analytics built on publicly available ball-by-ball data. Phase metrics use
+        Bayesian shrinkage to correct for sample-size noise. Salary valuations are
+        model-implied estimates, not formal contract assessments.
+      </div>
+    </footer>
+
+  </body>
+</html>

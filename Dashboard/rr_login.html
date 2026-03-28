@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rajasthan Royals — Access</title>
+    <style>
+      :root {
+        --rr-pink:       #E8175D;
+        --rr-pink-light: #FF4B82;
+        --rr-pink-glow:  rgba(232, 23, 93, 0.35);
+        --rr-pink-dim:   rgba(232, 23, 93, 0.15);
+        --rr-blue:       #14336B;
+        --rr-dark:       #06081A;
+        --rr-dark-2:     #0C1230;
+        --rr-card:       #111830;
+        --rr-text:       #EEF2FF;
+        --rr-muted:      #7B8DB8;
+        --rr-border:     rgba(232, 23, 93, 0.25);
+        --display: "Trebuchet MS", "Arial Narrow", sans-serif;
+        --ui: "Segoe UI", system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%;
+        font-family: var(--ui);
+        background: var(--rr-dark);
+        color: var(--rr-text);
+        background-image:
+          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(232,23,93,0.14), transparent),
+          radial-gradient(ellipse 50% 40% at 80% 70%, rgba(20,51,107,0.2), transparent);
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+      }
+
+      /* ── Card ───────────────────────────────────────────────── */
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: var(--rr-card);
+        border: 1px solid var(--rr-border);
+        border-radius: 24px;
+        padding: 44px 40px;
+        box-shadow:
+          0 0 60px rgba(232,23,93,0.1),
+          0 32px 80px rgba(0,0,0,0.6);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .login-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--rr-pink), #14336B);
+      }
+
+      /* ── Logo ───────────────────────────────────────────────── */
+      .logo-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 36px;
+        gap: 14px;
+      }
+
+      .rr-monogram {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--rr-pink), #B5144A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--display);
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: white;
+        letter-spacing: -0.04em;
+        box-shadow: 0 0 28px var(--rr-pink-glow);
+      }
+
+      .logo-title {
+        text-align: center;
+      }
+
+      .logo-title h1 {
+        font-family: var(--display);
+        font-size: 1.25rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        color: var(--rr-text);
+        margin-bottom: 4px;
+      }
+
+      .logo-title p {
+        font-size: 0.72rem;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+      }
+
+      /* ── Form ───────────────────────────────────────────────── */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--rr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin-bottom: 8px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--rr-text);
+        font-size: 1rem;
+        font-family: var(--ui);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        letter-spacing: 0.1em;
+      }
+
+      .form-input:focus {
+        border-color: var(--rr-pink);
+        box-shadow: 0 0 0 3px var(--rr-pink-dim);
+      }
+
+      .form-input::placeholder {
+        color: rgba(123, 141, 184, 0.5);
+        letter-spacing: 0.3em;
+      }
+
+      /* ── Button ─────────────────────────────────────────────── */
+      .submit-btn {
+        width: 100%;
+        padding: 15px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--rr-pink), #B5144A);
+        color: white;
+        font-weight: 700;
+        font-size: 0.92rem;
+        letter-spacing: 0.06em;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(232,23,93,0.35);
+        transition: all 0.2s;
+        font-family: var(--ui);
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 28px rgba(232,23,93,0.5);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      /* ── Error ──────────────────────────────────────────────── */
+      .error-msg {
+        display: none;
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(232,23,93,0.1);
+        border: 1px solid var(--rr-border);
+        color: var(--rr-pink-light);
+        font-size: 0.8rem;
+        text-align: center;
+      }
+
+      .error-msg.visible { display: block; }
+
+      /* ── Shake animation ────────────────────────────────────── */
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%       { transform: translateX(-8px); }
+        40%       { transform: translateX(8px); }
+        60%       { transform: translateX(-5px); }
+        80%       { transform: translateX(5px); }
+      }
+
+      .shake { animation: shake 0.4s ease; }
+
+      /* ── Footer note ────────────────────────────────────────── */
+      .access-note {
+        margin-top: 28px;
+        font-size: 0.7rem;
+        color: var(--rr-muted);
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      /* ── Season badge ───────────────────────────────────────── */
+      .season-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 0.62rem;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--rr-pink-dim);
+        border: 1px solid var(--rr-border);
+        color: var(--rr-pink-light);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-card">
+      <span class="season-badge">IPL 2026</span>
+
+      <div class="logo-wrap">
+        <div class="rr-monogram">RR</div>
+        <div class="logo-title">
+          <h1>Rajasthan Royals</h1>
+          <p>Decision Intelligence Platform</p>
+        </div>
+      </div>
+
+      <form id="login-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="password-input">Access Code</label>
+          <input
+            id="password-input"
+            class="form-input"
+            type="password"
+            placeholder="••••••••••"
+            autofocus
+          />
+        </div>
+        <button class="submit-btn" type="submit">Enter Platform →</button>
+        <div class="error-msg" id="error-msg">Incorrect access code. Please try again.</div>
+      </form>
+
+      <p class="access-note">
+        Restricted access · Rajasthan Royals Analytics Demo<br>
+        Contact <strong style="color:var(--rr-text);">piyushzaware</strong> for access
+      </p>
+    </div>
+
+    <script>
+      // ── Change this to set the demo password ─────────────────
+      const ACCESS_CODE = "royals2026";
+      const SESSION_KEY = "rr_demo_auth";
+      // ─────────────────────────────────────────────────────────
+
+      // Already authenticated — skip straight to hub
+      if (sessionStorage.getItem(SESSION_KEY) === "1") {
+        window.location.replace("./rr_hub.html");
+      }
+
+      document.getElementById("login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const input = document.getElementById("password-input");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (input.value === ACCESS_CODE) {
+          sessionStorage.setItem(SESSION_KEY, "1");
+          window.location.replace("./rr_hub.html");
+        } else {
+          errorMsg.classList.add("visible");
+          input.value = "";
+          input.focus();
+          // Shake the card
+          const card = document.querySelector(".login-card");
+          card.classList.remove("shake");
+          void card.offsetWidth; // reflow to restart animation
+          card.classList.add("shake");
+        }
+      });
+    </script>
+  </body>
+</html>

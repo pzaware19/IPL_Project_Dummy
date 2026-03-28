@@ -191,15 +191,89 @@
     renderMethodology();
   }
 
+  // ── URL param: ?team=RR scopes to that franchise ───────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const focusTeam = (urlParams.get("team") || "").toUpperCase();
+
+  // RR marquee player shown by default when in RR mode
+  const RR_DEFAULT_PLAYER = "Yashaswi Jaiswal";
+
+  function applyTeamBranding() {
+    if (!focusTeam) return;
+
+    // Topbar
+    const topbar = document.getElementById("rr-topbar");
+    if (topbar) topbar.style.display = "flex";
+
+    // Color overrides
+    const styleTag = document.getElementById("rr-mode-styles");
+    if (styleTag) {
+      styleTag.textContent = `
+        :root { --accent: #E8175D; --accent-soft: #FF4B82; --good: #E8175D; }
+        .eyebrow { color: #E8175D !important; }
+        .action-button {
+          background: linear-gradient(135deg, #E8175D, #B5144A) !important;
+          box-shadow: 0 4px 18px rgba(232,23,93,0.35) !important;
+        }
+        .replay-badge {
+          background: linear-gradient(145deg, #14336B, #0C1230) !important;
+          border-color: rgba(232,23,93,0.3) !important;
+        }
+        .replay-card { border-top: 3px solid #E8175D !important; }
+        .metric-card strong, th { color: #E8175D !important; }
+      `;
+    }
+
+    // Page text
+    const backLink = document.getElementById("back-link");
+    const eyebrow  = document.getElementById("page-eyebrow");
+    const title    = document.getElementById("page-title");
+    const desc     = document.getElementById("page-desc");
+    const badge    = document.getElementById("badge-top");
+    if (backLink) { backLink.href = "./rr_hub.html"; backLink.textContent = "← Back to RR Hub"; }
+    if (eyebrow)  eyebrow.textContent  = "Rajasthan Royals · Salary Valuation";
+    if (title)    title.textContent    = "RR Squad — Salary Value Lab";
+    if (desc)     desc.textContent     =
+      "Model-implied fair salary vs 2026 contract for every active RR player. Salary Value Index > 100 = undervalued. Shows where RR got value and where it overpaid.";
+    if (badge)    badge.textContent    = "RR Squad";
+
+    // Topbar squad label
+    const squadLabel = document.getElementById("rr-squad-label");
+    if (squadLabel) {
+      const rrPlayers = data.players.filter((p) => p.team_code === focusTeam);
+      const totalPurse = rrPlayers.reduce((s, p) => s + Number(p.salary_cr || 0), 0);
+      squadLabel.textContent =
+        `${rrPlayers.length} players · ₹${totalPurse.toFixed(1)} Cr total purse`;
+    }
+  }
+
   function init() {
+    applyTeamBranding();
+
     const teams = ["All Teams"].concat([...new Set(data.players.map((row) => row.team_code))].sort());
     els.team.innerHTML = teams.map((team) => `<option value="${team}">${team}</option>`).join("");
     els.band.innerHTML = ["All Bands", "Undervalued", "Fair Value", "Overvalued"]
       .map((band) => `<option value="${band}">${band}</option>`)
       .join("");
-    els.team.value = "All Teams";
+
+    // Default to focus team if ?team= is set and exists in the data
+    if (focusTeam && teams.includes(focusTeam)) {
+      els.team.value = focusTeam;
+    } else {
+      els.team.value = "All Teams";
+    }
     els.band.value = "All Bands";
+
     syncPlayerOptions();
+
+    // Default selected player to RR marquee name in RR mode
+    if (focusTeam === "RR") {
+      const rrPlayers = data.players.filter((p) => p.team_code === "RR");
+      const defaultPlayer = rrPlayers.find((p) => p.player === RR_DEFAULT_PLAYER)
+        || rrPlayers.sort((a, b) => b.salary_cr - a.salary_cr)[0];
+      if (defaultPlayer) els.search.value = defaultPlayer.player;
+    }
+
     els.team.addEventListener("change", render);
     els.band.addEventListener("change", render);
     els.search.addEventListener("change", render);

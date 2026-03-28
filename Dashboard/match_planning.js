@@ -215,19 +215,115 @@
     `;
   }
 
+  // ── URL param: ?team=RR filters to that franchise ──────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const focusTeam = (urlParams.get("team") || "").toUpperCase();
+
+  function applyTeamBranding() {
+    if (!focusTeam) return;
+
+    // Show sticky topbar
+    const topbar = document.getElementById("rr-topbar");
+    if (topbar) topbar.style.display = "flex";
+
+    // Inject RR color overrides
+    const styleTag = document.getElementById("rr-mode-styles");
+    if (styleTag) {
+      styleTag.textContent = `
+        :root {
+          --accent: #E8175D;
+          --accent-soft: #FF4B82;
+          --good: #E8175D;
+        }
+        .eyebrow { color: #E8175D !important; }
+        .action-button {
+          background: linear-gradient(135deg, #E8175D, #B5144A) !important;
+          box-shadow: 0 4px 18px rgba(232,23,93,0.35) !important;
+        }
+        .replay-badge {
+          background: linear-gradient(145deg, #14336B, #0C1230) !important;
+          border-color: rgba(232,23,93,0.3) !important;
+        }
+        .replay-card { border-top: 3px solid #E8175D !important; }
+        .metric-card strong { color: #E8175D !important; }
+        .nav-links a:hover { background: rgba(232,23,93,0.15) !important; }
+      `;
+    }
+
+    // Update page text
+    const backLink = document.getElementById("back-link");
+    const eyebrow = document.getElementById("page-eyebrow");
+    const title = document.getElementById("page-title");
+    const desc = document.getElementById("page-desc");
+    const badge = document.getElementById("badge-top");
+    if (backLink) { backLink.href = "./rr_hub.html"; backLink.textContent = "← Back to RR Hub"; }
+    if (eyebrow) eyebrow.textContent = "Rajasthan Royals · Match Intelligence";
+    if (title) title.textContent = "RR 2026 — Match-by-Match Tactical Brief";
+    if (desc) desc.textContent =
+      "Opponent-aware SWOT, phase-by-phase tactical plan, venue specialists, and pressure ratings for every RR fixture this season.";
+    if (badge) badge.textContent = "RR Fixtures";
+
+    // Show next match label in topbar
+    const nextLabel = document.getElementById("rr-next-match-label");
+    if (nextLabel) {
+      const today = new Date().toISOString().slice(0, 10);
+      const next = getTeamMatches().find((m) => m.date >= today);
+      if (next) {
+        const daysUntil = Math.round(
+          (new Date(next.date) - new Date(today)) / 86400000
+        );
+        const label = daysUntil === 0 ? "MATCH DAY"
+          : daysUntil === 1 ? "Tomorrow"
+          : `In ${daysUntil} days`;
+        nextLabel.textContent = `Next: ${next.label} · ${label}`;
+      }
+    }
+  }
+
+  function getTeamMatches() {
+    if (!focusTeam) return data.matches;
+    return data.matches.filter(
+      (m) => m.home === focusTeam || m.away === focusTeam
+    );
+  }
+
+  function getNextMatchId(matches) {
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = matches.filter((m) => m.date >= today);
+    if (upcoming.length > 0) return String(upcoming[0].match_id);
+    return String(matches[matches.length - 1].match_id);
+  }
+
   function init() {
-    setOptions(els.match, data.matches.map((row) => String(row.match_id)), (value) => {
+    applyTeamBranding();
+
+    const visibleMatches = getTeamMatches();
+
+    setOptions(els.match, visibleMatches.map((row) => String(row.match_id)), (value) => {
       const match = data.matches.find((row) => String(row.match_id) === value);
       return match ? `${match.date} · ${match.label}` : value;
     });
+
+    // Auto-select next upcoming match
+    const nextId = getNextMatchId(visibleMatches);
+    els.match.value = nextId;
+
     const initialMatch = currentMatch();
     if (initialMatch) {
       syncLensOptions(initialMatch, false);
+      // Auto-select focus team lens if ?team= is set
+      if (focusTeam && [initialMatch.home, initialMatch.away].includes(focusTeam)) {
+        els.lens.value = focusTeam;
+      }
     }
+
     els.match.addEventListener("change", () => {
       const match = currentMatch();
       if (!match) return;
       syncLensOptions(match, false);
+      if (focusTeam && [match.home, match.away].includes(focusTeam)) {
+        els.lens.value = focusTeam;
+      }
       render();
     });
     els.lens.addEventListener("change", () => {

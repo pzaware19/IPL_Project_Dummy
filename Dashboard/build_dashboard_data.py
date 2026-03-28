@@ -506,6 +506,16 @@ MATCH_SCHEDULE_2026 = [
     {"date": "2026-04-11", "home": "CSK", "away": "DC", "start": "7:30 PM", "venue": "Chennai"},
     {"date": "2026-04-12", "home": "LSG", "away": "GT", "start": "3:30 PM", "venue": "Lucknow"},
     {"date": "2026-04-12", "home": "MI", "away": "RCB", "start": "7:30 PM", "venue": "Mumbai"},
+    {"date": "2026-04-13", "home": "SRH", "away": "RR", "start": "7:30 PM", "venue": "Hyderabad"},
+    {"date": "2026-04-19", "home": "KKR", "away": "RR", "start": "3:30 PM", "venue": "Kolkata"},
+    {"date": "2026-04-22", "home": "LSG", "away": "RR", "start": "7:30 PM", "venue": "Lucknow"},
+    {"date": "2026-04-25", "home": "RR", "away": "SRH", "start": "7:30 PM", "venue": "Jaipur"},
+    {"date": "2026-04-28", "home": "PBKS", "away": "RR", "start": "7:30 PM", "venue": "Mullanpur"},
+    {"date": "2026-05-01", "home": "RR", "away": "DC", "start": "3:30 PM", "venue": "Jaipur"},
+    {"date": "2026-05-09", "home": "RR", "away": "GT", "start": "7:30 PM", "venue": "Jaipur"},
+    {"date": "2026-05-17", "home": "DC", "away": "RR", "start": "7:30 PM", "venue": "Delhi"},
+    {"date": "2026-05-19", "home": "RR", "away": "LSG", "start": "7:30 PM", "venue": "Jaipur"},
+    {"date": "2026-05-24", "home": "MI", "away": "RR", "start": "3:30 PM", "venue": "Mumbai"},
 ]
 
 CITY_ALIASES = {
@@ -520,6 +530,8 @@ CITY_ALIASES = {
     "delhi": "delhi",
     "ahmedabad": "ahmedabad",
     "hyderabad": "hyderabad",
+    "jaipur": "jaipur",
+    "new chandigarh": "mullanpur",
 }
 
 
