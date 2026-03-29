@@ -33,6 +33,15 @@ def ensure_dashboard_data() -> None:
     data_path = DASHBOARD_DIR / "data" / "dashboard_data.js"
     if data_path.exists():
         return
+    # Only rebuild if not running as a Render web service (build step should have done it).
+    # On Render, attempting to rebuild at startup would exceed the startup health-check timeout.
+    if os.environ.get("RENDER"):
+        print(
+            "WARNING: dashboard_data.js missing on Render — skipping runtime rebuild. "
+            "Re-deploy to trigger a fresh build.",
+            flush=True,
+        )
+        return
     from Dashboard.build_dashboard_data import main as build_dashboard_data_main
 
     build_dashboard_data_main()
