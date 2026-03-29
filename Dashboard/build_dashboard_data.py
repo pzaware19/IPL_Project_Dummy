@@ -2357,6 +2357,16 @@ def build_match_planning_payload(players_payload: dict) -> dict:
             "availability_explicit": False,
         }
 
+    def note_has_availability_signal(note: str) -> bool:
+        lowered = str(note or "").lower()
+        signal_terms = [
+            "injury", "injured", "miss", "missing", "ruled out", "replacement",
+            "replaced", "replaces", "returns", "return", "fit", "fitness",
+            "rejoined", "availability", "unavailable", "strain", "hamstring",
+            "calf", "groin", "rehab", "rehabilitation", "managed", "doubtful",
+        ]
+        return any(term in lowered for term in signal_terms)
+
     def squad_strength(row: dict) -> float:
         player = row["player"]
         batter = active_batters.get(player)
@@ -2648,7 +2658,7 @@ def build_match_planning_payload(players_payload: dict) -> dict:
             if row["availability_explicit"]
             and (
                 row["availability_status"] != "available"
-                or row["availability_note"]
+                or note_has_availability_signal(row["availability_note"])
                 or row["selection_probability"] < 0.995
             )
         ]

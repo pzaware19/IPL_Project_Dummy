@@ -10,6 +10,9 @@ on:
 jobs:
   refresh-data:
     runs-on: ubuntu-latest
+    env:
+      LEAGUE_MC_ITERATIONS: '20'
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
     steps:
       # -----------------------------------------------------------------------
@@ -32,7 +35,7 @@ jobs:
       # 3. Install dependencies
       # -----------------------------------------------------------------------
       - name: Install Python dependencies
-        run: pip install pandas openpyxl
+        run: pip install -r requirements.txt
 
       # -----------------------------------------------------------------------
       # 4. Run ingestion script
@@ -42,27 +45,28 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Run Cricsheet 2026 ingest
         id: ingest
-        # continue-on-error lets us inspect the exit code rather than aborting
-        # the job on exit code 2 (no new matches).
         continue-on-error: true
         run: |
-          python Code/ingest_cricsheet_2026.py
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          python Code/ingest_cricsheet_2026.py || true
 
       # -----------------------------------------------------------------------
-      # 5a. If new matches found: rebuild dashboard payload (fast CI mode)
+      # 5. Refresh Layer 3 availability / selection intel
+      # -----------------------------------------------------------------------
+      - name: Run Layer 3 intel pipeline
+        continue-on-error: true
+        run: |
+          python Code/update_layer3_intel.py --limit 12 || true
+
+      # -----------------------------------------------------------------------
+      # 6. Rebuild dashboard payload
       # -----------------------------------------------------------------------
       - name: Rebuild dashboard data
-        if: steps.ingest.outcome == 'success'
-        env:
-          LEAGUE_MC_ITERATIONS: '20'
         run: python Dashboard/build_dashboard_data.py
 
       # -----------------------------------------------------------------------
-      # 5b. If new matches found: commit and push updated data files
+      # 7. Commit and push any changed data files
       # -----------------------------------------------------------------------
       - name: Commit updated data files
-        if: steps.ingest.outcome == 'success'
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
@@ -81,17 +85,16 @@ jobs:
             Data/death_batting_active.csv \
             Data/powerplay_bowling_active.csv \
             Data/middle_bowling_active.csv \
-            Data/death_bowling_active.csv
+            Data/death_bowling_active.csv \
+            Data/layer3_source_inbox_2026.json \
+            Data/layer3_extracted_claims_2026.json \
+            Data/team_availability_2026.json \
+            Dashboard/data/dashboard_data.js
 
-          git commit -m "Auto-ingest: add 2026 IPL data from Cricsheet [skip ci]"
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Auto-refresh: IPL data and Layer 3 intel [skip ci]"
           git push
-
-      # -----------------------------------------------------------------------
-      # 5c. If no new matches: just print a notice and exit cleanly
-      # -----------------------------------------------------------------------
-      - name: No new matches — skipping commit
-        if: steps.ingest.outcome == 'failure'
-        run: |
-          echo "Ingest script returned a non-zero exit code."
-          echo "If exit code was 2, this means no new 2026 matches were found — nothing to commit."
-          echo "If exit code was 1, check the ingest step logs for the actual error."
