@@ -19,6 +19,7 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "Data"
 WATCHLIST_PATH = DATA_DIR / "layer3_watchlist.json"
+SEED_URLS_PATH = DATA_DIR / "layer3_seed_urls_2026.json"
 INBOX_PATH = DATA_DIR / "layer3_source_inbox_2026.json"
 CLAIMS_PATH = DATA_DIR / "layer3_extracted_claims_2026.json"
 REGISTRY_PATH = DATA_DIR / "team_availability_2026.json"
@@ -457,6 +458,21 @@ def parse_web_items(source: dict[str, Any], raw_text: str) -> list[dict[str, Any
     return items
 
 
+def load_seed_urls() -> list[dict[str, Any]]:
+    seeds = load_json(SEED_URLS_PATH, [])
+    if not isinstance(seeds, list):
+        return []
+    cleaned: list[dict[str, Any]] = []
+    for seed in seeds:
+        if not isinstance(seed, dict):
+            continue
+        url = str(seed.get("url") or "").strip()
+        if not url:
+            continue
+        cleaned.append(seed)
+    return cleaned
+
+
 def groq_backoff_seconds(attempt: int) -> float:
     return 2.0 * (attempt + 1)
 
@@ -495,12 +511,82 @@ def inbox_matches_team_filter(item: dict[str, Any], team_filter: set[str]) -> bo
     return bool(item_scope & team_filter) or (team in team_filter)
 
 
+def ingest_seed_urls(existing_ids: set[str], team_filter: set[str]) -> list[dict[str, Any]]:
+    new_items: list[dict[str, Any]] = []
+    for idx, seed in enumerate(load_seed_urls(), start=1):
+        if seed.get("enabled") is False:
+            continue
+        source = {
+            "source_id": str(seed.get("source_id") or f"seed_url_{idx}").strip(),
+            "name": str(seed.get("source_name") or seed.get("name") or "Seeded URL").strip(),
+            "source_type": "seeded_url",
+            "url": str(seed.get("url") or "").strip(),
+            "priority": str(seed.get("priority") or "major_media").strip(),
+            "team_scope": [str(team).upper() for team in (seed.get("team_scope") or [])],
+        }
+        if not source_matches_team_filter(source, team_filter):
+            log_debug(f"{source['source_id']} skipped by team filter")
+            continue
+        try:
+            raw_text = fetch_url(source["url"])
+        except (HTTPError, URLError) as exc:
+            print(f"[Layer3] seeded fetch failed for {source['source_id']}: {exc}")
+            continue
+        except Exception as exc:  # noqa: BLE001
+            print(f"[Layer3] unexpected seeded fetch failure for {source['source_id']}: {exc}")
+            continue
+
+        parsed_items = parse_web_item(source, raw_text)
+        if not parsed_items:
+            log_debug(f"{source['source_id']} yielded no parsed article rows")
+            continue
+
+        article = parsed_items[0]
+        article["title"] = str(seed.get("title") or article.get("title") or source["name"]).strip()
+        article["published_at"] = str(seed.get("published_at") or parse_article_date(raw_text) or article.get("published_at") or "").strip()
+        if seed.get("notes"):
+            article["raw_text"] = f"{article.get('raw_text', '')} {str(seed.get('notes') or '').strip()}".strip()
+        if not article.get("raw_text"):
+            continue
+
+        item_id = source_item_id(source["source_id"], source["url"], article["title"])
+        if item_id in existing_ids:
+            log_debug(f"{source['source_id']} skipped duplicate seeded item: {article['title'][:90]}")
+            continue
+
+        entry = {
+            "source_item_id": item_id,
+            "source_id": source["source_id"],
+            "source_name": source["name"],
+            "source_type": source["source_type"],
+            "priority": source["priority"],
+            "team_scope": team_scope_text(source),
+            "title": article["title"],
+            "url": source["url"],
+            "published_at": article["published_at"],
+            "fetched_at": utc_now_iso(),
+            "raw_text": article["raw_text"],
+            "status": "unprocessed",
+            "seeded": True,
+        }
+        new_items.append(entry)
+        existing_ids.add(item_id)
+        log_debug(f"{source['source_id']} added seeded item: {article['title'][:110]}")
+
+    return new_items
+
+
 def ingest_sources(team_filter: set[str] | None = None) -> list[dict[str, Any]]:
     watchlist = load_json(WATCHLIST_PATH, [])
     inbox = load_json(INBOX_PATH, [])
     existing_ids = {item["source_item_id"] for item in inbox}
     new_items: list[dict[str, Any]] = []
     team_filter = team_filter or set()
+
+    seeded_items = ingest_seed_urls(existing_ids, team_filter)
+    if seeded_items:
+        inbox.extend(seeded_items)
+        new_items.extend(seeded_items)
 
     for source in watchlist:
         if not source.get("enabled"):
@@ -646,10 +732,15 @@ def extract_claims(limit: int | None = None, team_filter: set[str] | None = None
     pending = [
         item for item in pending
         if not looks_like_junk_item(item.get("title", ""), item.get("raw_text", ""))
-        and (has_strong_availability_signal(f"{item.get('title','')} {item.get('raw_text','')}") or "official" in str(item.get("priority", "")))
+        and (
+            item.get("seeded")
+            or has_strong_availability_signal(f"{item.get('title','')} {item.get('raw_text','')}")
+            or "official" in str(item.get("priority", ""))
+        )
     ]
     pending.sort(
         key=lambda item: (
+            bool(item.get("seeded")),
             has_strong_availability_signal(f"{item.get('title','')} {item.get('raw_text','')}"),
             PRIORITY_SCORE.get(str(item.get("priority") or ""), 0),
             relevance_score(f"{item.get('title','')} {item.get('raw_text','')}", {"team_scope": item.get("team_scope", [])}),

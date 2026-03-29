@@ -1,0 +1,24 @@
+[
+  {
+    "source_id": "cricbuzz_dhoni_two_weeks_seed",
+    "source_name": "Cricbuzz",
+    "url": "https://www.cricbuzz.com/cricket-news/138168/ms-dhoni-likely-to-miss-first-two-weeks-of-ipl-2026-cricbuzzcom",
+    "title": "MS Dhoni likely to miss first two weeks of IPL 2026",
+    "team_scope": ["CSK", "RR"],
+    "priority": "major_media",
+    "published_at": "2026-03-29",
+    "notes": "High-value seeded article for RR vs CSK match prep. Expected to influence early availability outlook for MS Dhoni.",
+    "enabled": true
+  },
+  {
+    "source_id": "cricbuzz_nathan_ellis_seed",
+    "source_name": "Cricbuzz",
+    "url": "https://www.cricbuzz.com/cricket-news/138085/csks-nathan-ellis-to-miss-ipl-2026-with-a-hamstring-injury-shr-jack-edwards-ipl-2026-injury-updates-injury-replacements-cricbuzzcom",
+    "title": "CSK's Nathan Ellis to miss IPL 2026 with a hamstring injury",
+    "team_scope": ["CSK", "RR"],
+    "priority": "major_media",
+    "published_at": "2026-03-29",
+    "notes": "High-value seeded injury article for CSK. Also contains replacement context relevant to RR vs CSK planning.",
+    "enabled": true
+  }
+]

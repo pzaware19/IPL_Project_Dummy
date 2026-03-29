@@ -19,6 +19,8 @@ Layer 3 is meant to capture:
 
 - `Data/layer3_watchlist.json`
   - curated source registry
+- `Data/layer3_seed_urls_2026.json`
+  - direct high-value article URLs that bypass weak homepage discovery
 - `Data/layer3_source_inbox_2026.json`
   - raw fetched items
 - `Data/layer3_extracted_claims_2026.json`
@@ -60,6 +62,7 @@ python Code/update_layer3_intel.py
 ## Current design notes
 
 - Manual sources can still be added by appending rows into the inbox file.
+- High-confidence direct reports can be added to `layer3_seed_urls_2026.json` so the pipeline ingests them every run.
 - Watchlist entries with blank URLs are placeholders to fill with real source URLs.
 - The resolver currently picks the strongest and newest claim per player/team using a simple confidence hierarchy.
 - This is intentionally a first-pass operational scaffold, not the final conflict-resolution system.
