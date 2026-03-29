@@ -191,6 +191,23 @@
 
       .error-msg.visible { display: block; }
 
+      .status-msg {
+        margin-top: 12px;
+        min-height: 1.1rem;
+        font-size: 0.76rem;
+        color: var(--rr-muted);
+        text-align: center;
+        letter-spacing: 0.03em;
+      }
+
+      .status-msg.pending {
+        color: var(--rr-text);
+      }
+
+      .status-msg.success {
+        color: #7ef0c8;
+      }
+
       /* ── Shake animation ────────────────────────────────────── */
       @keyframes shake {
         0%, 100% { transform: translateX(0); }
@@ -254,6 +271,7 @@
         </div>
         <button class="submit-btn" type="submit">Enter Platform →</button>
         <div class="error-msg" id="error-msg">Incorrect access code. Please try again.</div>
+        <div class="status-msg" id="status-msg">Enter the access code to open the RR workspace.</div>
       </form>
 
       <p class="access-note">
@@ -267,10 +285,14 @@
         e.preventDefault();
         const input    = document.getElementById("password-input");
         const errorMsg = document.getElementById("error-msg");
+        const statusMsg = document.getElementById("status-msg");
         const btn      = document.querySelector(".submit-btn");
 
         btn.disabled = true;
         btn.textContent = "Checking…";
+        errorMsg.classList.remove("visible");
+        statusMsg.className = "status-msg pending";
+        statusMsg.textContent = "Checking access and setting secure session…";
 
         try {
           const res  = await fetch("/api/auth", {
@@ -282,6 +304,9 @@
           const data = await res.json();
 
           if (data.ok) {
+            sessionStorage.setItem("rr_demo_auth", "1");
+            statusMsg.className = "status-msg success";
+            statusMsg.textContent = "Access granted. Redirecting to the RR hub…";
             window.location.replace("./rr_hub.html");
           } else {
             throw new Error(data.error || "wrong code");
@@ -292,6 +317,8 @@
               ? "Unable to verify access right now. Please try again."
               : "Incorrect access code. Please try again.";
           errorMsg.classList.add("visible");
+          statusMsg.className = "status-msg";
+          statusMsg.textContent = "If this keeps happening, clear site cookies and try again.";
           input.value = "";
           input.focus();
           btn.disabled = false;

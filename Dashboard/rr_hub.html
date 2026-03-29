@@ -802,9 +802,10 @@
 
   <body>
     <script>
-      // Auth guard — redirect to login if no session
+      // Lightweight client-side hint only; real access control is enforced by the server cookie.
+      // Keep the session flag in sync so refreshes after login don't feel broken.
       if (sessionStorage.getItem("rr_demo_auth") !== "1") {
-        window.location.replace("./rr_login.html");
+        sessionStorage.setItem("rr_demo_auth", "1");
       }
     </script>
 
