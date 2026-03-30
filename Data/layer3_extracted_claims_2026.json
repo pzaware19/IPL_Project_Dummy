@@ -259,23 +259,6 @@
     "extracted_at": "2026-03-29T16:06:21+00:00"
   },
   {
-    "claim_id": "dc_official_site_delhi_capitals_ipl_news_latest_news_claim_1",
-    "source_item_id": "dc_official_site_delhi_capitals_ipl_news_latest_news",
-    "source_id": "dc_official_site",
-    "source_name": "Delhi Capitals Official",
-    "priority": "official",
-    "player": "Faf du Plessis",
-    "team": "DC",
-    "status": "available",
-    "confidence": "official",
-    "selection_probability": 0.8,
-    "expected_absence_window": null,
-    "replacement_candidates": [],
-    "note": "Rejoined the squad for remainder of IPL 2025",
-    "source_date": "2026-03-29T16:06:13+00:00",
-    "extracted_at": "2026-03-29T16:06:22+00:00"
-  },
-  {
     "claim_id": "dc_official_site_delhi_capitals_ipl_news_latest_news_claim_2",
     "source_item_id": "dc_official_site_delhi_capitals_ipl_news_latest_news",
     "source_id": "dc_official_site",
@@ -1238,23 +1221,6 @@
     "note": "Listed in the women's squad",
     "source_date": "2026-03-29T16:57:29+00:00",
     "extracted_at": "2026-03-29T17:09:46+00:00"
-  },
-  {
-    "claim_id": "cricbuzz_latest_news_sunrisers_hyderabad_vs_royal_challengers_bengaluru_1st_match_live_cricket_scores_149618_srh_vs_rcb__claim_1",
-    "source_item_id": "cricbuzz_latest_news_sunrisers_hyderabad_vs_royal_challengers_bengaluru_1st_match_live_cricket_scores_149618_srh_vs_rcb_",
-    "source_id": "cricbuzz_latest_news",
-    "source_name": "Cricbuzz Latest News",
-    "priority": "major_media",
-    "player": "Dewald Brevis",
-    "team": "RR",
-    "status": "ruled_out",
-    "confidence": "major_media",
-    "selection_probability": 0.0,
-    "expected_absence_window": "at least 1 match",
-    "replacement_candidates": [],
-    "note": "side strain",
-    "source_date": "2026-03-29T16:57:50+00:00",
-    "extracted_at": "2026-03-29T17:14:26+00:00"
   },
   {
     "claim_id": "cricbuzz_latest_news_rajasthan_royals_vs_chennai_super_kings_3rd_match_live_cricket_scores_149640_rr_vs_csk_3rd_match_ip_claim_1",

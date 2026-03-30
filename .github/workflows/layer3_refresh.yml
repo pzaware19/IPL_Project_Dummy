@@ -1,0 +1,82 @@
+name: Layer 3 Availability Refresh
+
+# Runs 4× daily during IPL season to capture pre-match squad news,
+# toss updates, and post-match injury reports.
+#
+# IST match windows:
+#   3:30 PM IST afternoon slot  →  10:00 AM UTC
+#   7:30 PM IST evening slot    →  14:00 PM UTC
+#
+# Schedule:
+#   06:00 UTC = 11:30 AM IST  — morning briefing window
+#   09:30 UTC = 3:00 PM IST   — 30 min before afternoon matches
+#   13:00 UTC = 6:30 PM IST   — post-afternoon / pre-evening
+#   17:00 UTC = 10:30 PM IST  — post-evening match wrap-up
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 11:30 AM IST — morning briefing
+    - cron: '30 9 * * *'  # 3:00 PM IST  — pre-afternoon match
+    - cron: '0 13 * * *'  # 6:30 PM IST  — post-afternoon / pre-evening
+    - cron: '0 17 * * *'  # 10:30 PM IST — post-match wrap-up
+
+  # Trigger manually from the Actions tab at any time (e.g. live match)
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max inbox items to process through Groq extraction'
+        required: false
+        default: '20'
+
+permissions:
+  contents: write
+
+jobs:
+  layer3-refresh:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Ingest + extract + resolve in one pass.
+      # --limit caps how many new inbox items are sent to Groq.
+      # Scheduled runs use 15; manual dispatch uses the input value.
+      - name: Run Layer 3 intel pipeline
+        run: |
+          LIMIT="${{ github.event.inputs.limit || '15' }}"
+          python Code/update_layer3_intel.py --limit "$LIMIT" || true
+
+      - name: Rebuild dashboard payload
+        run: python Dashboard/build_dashboard_data.py
+
+      - name: Commit updated availability data
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          git add \
+            Data/layer3_source_inbox_2026.json \
+            Data/layer3_extracted_claims_2026.json \
+            Data/team_availability_2026.json \
+            Dashboard/data/dashboard_data.js
+
+          if git diff --cached --quiet; then
+            echo "No availability changes to commit — registry already current."
+            exit 0
+          fi
+
+          git commit -m "Auto-refresh: Layer 3 availability intel [skip ci]"
+          git push
