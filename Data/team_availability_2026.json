@@ -12,6 +12,36 @@
     "note": "side strain"
   },
   {
+    "player": "MS Dhoni",
+    "team": "CSK",
+    "status": "doubtful",
+    "confidence": "major_media",
+    "selection_probability": 0.2,
+    "best_source": "Cricbuzz",
+    "source_date": "2026-03-29",
+    "expected_absence_window": "first two weeks of IPL 2026",
+    "replacement_candidates": [
+      "Sanju Samson",
+      "Kartik Sharma",
+      "Urvil Patel"
+    ],
+    "note": "recovering from a calf strain"
+  },
+  {
+    "player": "Nathan Ellis",
+    "team": "CSK",
+    "status": "ruled_out",
+    "confidence": "major_media",
+    "selection_probability": 0.0,
+    "best_source": "Cricbuzz",
+    "source_date": "2026-03-29",
+    "expected_absence_window": "entire tournament",
+    "replacement_candidates": [
+      "Registered Available Player Pool (RAPP)"
+    ],
+    "note": "hamstring injury"
+  },
+  {
     "player": "Prashant Veer",
     "team": "CSK",
     "status": "available",
@@ -604,8 +634,58 @@
     "best_source": "Cricbuzz Latest News",
     "source_date": "2026-03-29T16:57:50+00:00",
     "expected_absence_window": "at least 1 match",
-    "replacement_candidates": [],
+    "replacement_candidates": [
+      "unknown"
+    ],
     "note": "side strain"
+  },
+  {
+    "player": "Dhruv Jurel",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.8,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster and featured in recent practice sessions"
+  },
+  {
+    "player": "Jofra Archer",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.8,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster"
+  },
+  {
+    "player": "Ravindra Jadeja",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.8,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster"
+  },
+  {
+    "player": "Riyan Parag",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.8,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster"
   },
   {
     "player": "Sam Curran",
@@ -617,9 +697,34 @@
     "source_date": "23 Mar, 2026",
     "expected_absence_window": "entire tournament",
     "replacement_candidates": [
-      "Dasun Shanaka"
+      "Dasun Shanaka",
+      "Registered Available Player Pool (RAPP)"
     ],
     "note": "Injured, replaced by Dasun Shanaka"
+  },
+  {
+    "player": "Shimron Hetmyer",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.7,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster"
+  },
+  {
+    "player": "Yashasvi Jaiswal",
+    "team": "RR",
+    "status": "available",
+    "confidence": "official",
+    "selection_probability": 0.9,
+    "best_source": "Rajasthan Royals Official",
+    "source_date": "29 Mar, 2026",
+    "expected_absence_window": null,
+    "replacement_candidates": [],
+    "note": "listed in the team's player roster and featured in recent practice sessions"
   },
   {
     "player": "Abhishek Sharma",
@@ -754,5 +859,33 @@
     "expected_absence_window": null,
     "replacement_candidates": [],
     "note": ""
+  },
+  {
+    "player": "Jack Edwards",
+    "team": "UNKNOWN",
+    "status": "ruled_out",
+    "confidence": "major_media",
+    "selection_probability": 0.0,
+    "best_source": "Cricbuzz",
+    "source_date": "2026-03-29",
+    "expected_absence_window": "entire tournament",
+    "replacement_candidates": [
+      "unknown"
+    ],
+    "note": "injury, specifics unknown"
+  },
+  {
+    "player": "Pat Cummins",
+    "team": "UNKNOWN",
+    "status": "doubtful",
+    "confidence": "major_media",
+    "selection_probability": 0.5,
+    "best_source": "Cricbuzz",
+    "source_date": "2026-03-29",
+    "expected_absence_window": "at least one match",
+    "replacement_candidates": [
+      "unknown"
+    ],
+    "note": "availability uncertain"
   }
 ]
