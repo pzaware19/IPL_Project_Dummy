@@ -815,7 +815,7 @@ def build_phase_payload() -> dict:
 
 
 def build_overview_payload() -> dict:
-    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"])
+    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"], low_memory=False)
     league = pd.read_csv(DATA_DIR / "league_auction_mc_summary_2026.csv")
     return {
         "matches": int(ball["match_id"].nunique()),
@@ -980,7 +980,7 @@ def build_team_payload() -> dict:
     configs = resolve_team_configs("2026")
     states = build_team_states(configs)
     player_style_lookup = build_dashboard_player_style_lookup()
-    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", usecols=["batter", "bowler", "legal_ball"])
+    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", usecols=["batter", "bowler", "legal_ball"], low_memory=False)
 
     batter_balls = (
         ball.groupby("batter")["legal_ball"].sum().rename(index=canonical_player_name).groupby(level=0).sum().to_dict()
@@ -1202,7 +1202,7 @@ def percentile_map(series: pd.Series, ascending: bool = True) -> dict[str, float
 
 
 def build_player_payload() -> dict:
-    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"])
+    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"], low_memory=False)
     ball["run_value"] = ball["runs_total"] - ball["runs_total"].mean()
     ball["season_year"] = pd.to_datetime(ball["date"]).dt.year
     player_style_lookup = build_dashboard_player_style_lookup()
@@ -1806,7 +1806,7 @@ def build_scenario_payload() -> dict:
     auction_pool = add_player_valuation_columns(load_auction_pool("2026"), season="2026")
     league_events = pd.read_csv(DATA_DIR / "league_auction_simulation_2026_events.csv")
     league_events_mc = pd.read_csv(DATA_DIR / "league_auction_simulation_2026_events_mc.csv")
-    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", usecols=["batter", "bowler", "date"])
+    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", usecols=["batter", "bowler", "date"], low_memory=False)
     batter_last_year = (
         ball.groupby("batter")["date"]
         .max()
@@ -2250,7 +2250,7 @@ def build_matchup_payload() -> dict:
 
 
 def build_match_planning_payload(players_payload: dict) -> dict:
-    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"])
+    ball = pd.read_csv(DATA_DIR / "ipl_ball_by_ball.csv", parse_dates=["date"], low_memory=False)
     ball["season_year"] = ball["date"].dt.year
     ball["batter_name"] = ball["batter"].map(canonical_player_name)
     ball["bowler_name"] = ball["bowler"].map(canonical_player_name)
@@ -3149,6 +3149,7 @@ def build_batter_diagnostics_payload(players_payload: dict) -> dict:
     ball = pd.read_csv(
         DATA_DIR / "ipl_ball_by_ball.csv",
         parse_dates=["date"],
+        low_memory=False,
         usecols=[
             "date",
             "match_id",
