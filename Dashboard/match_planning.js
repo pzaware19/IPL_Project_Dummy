@@ -468,9 +468,13 @@
       return match ? `${match.date} · ${match.label}` : value;
     });
 
-    // Auto-select next upcoming match
-    const nextId = getNextMatchId(visibleMatches);
-    els.match.value = nextId;
+    // Auto-select match: prefer ?match= URL param, then next upcoming match
+    const matchParam = urlParams.get("match");
+    const requestedMatch = matchParam && visibleMatches.find((m) => String(m.match_id) === matchParam);
+    if (matchParam && !requestedMatch) {
+      console.warn(`[match_planning] match_id "${matchParam}" not found in visible matches; falling back to next upcoming.`);
+    }
+    els.match.value = requestedMatch ? matchParam : getNextMatchId(visibleMatches);
 
     const initialMatch = currentMatch();
     if (initialMatch) {
